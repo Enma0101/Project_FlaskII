@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Estudiantes</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Roboto Condensed', sans-serif;
+            background-color: #4F0F19;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 80%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            background-color: rgba(51, 51, 51, 0.8); /* Fondo semi-transparente */
+            border-radius: 10px; /* Bordes redondeados */
+            overflow: hidden; /* Ocultar contenido que se desborde */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Sombra */
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #e8bb05; /* Fondo amarillo para encabezados */
+            color: #333; /* Color del texto */
+        }
+
+        tr:nth-child(even) {
+            background-color: #333; /* Fondo para filas pares */
+        }
+
+        tr:nth-child(odd) {
+            background-color: #444; /* Fondo para filas impares */
+        }
+
+        td {
+            border: 1px solid #444;
+        }
+
+        table, th, td {
+            border: none;
+        }
+
+        .button {
+            background-color: #e8bb05;
+            color: #333;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 14px;
+            font-family: 'Roboto Condensed', sans-serif;
+            margin-right: 5px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .button:hover {
+            background-color: #d4a105;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lista de Estudiantes</h1>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>DNI</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Fecha de Nacimiento</th>
+            <th>Dirección</th>
+            <th>Teléfono</th>
+            <th>Email</th>
+            <th>Género</th>
+            <th>Acciones</th> <!-- Nueva columna para botones -->
+        </tr>
+        {% for estudiante in estudiantes %}
+        <tr>
+            <td>{{ estudiante.id_estudiante }}</td>
+            <td>{{ estudiante.dni_estudiante }}</td>
+            <td>{{ estudiante.nombre }}</td>
+            <td>{{ estudiante.apellido }}</td>
+            <td>{{ estudiante.fecha_nacimiento }}</td>
+            <td>{{ estudiante.direccion }}</td>
+            <td>{{ estudiante.telefono }}</td>
+            <td>{{ estudiante.email }}</td>
+            <td>{{ estudiante.genero }}</td>
+            <td>
+                <a href="{{ url_for('edit_estudiante', id=estudiante.id_estudiante) }}" class="button">Editar</a>
+                <form method="POST" action="{{ url_for('delete_estudiante', id=estudiante.id_estudiante) }}" style="display: inline;">
+                    <button type="submit" class="button" onclick="return confirm('¿Estás seguro de eliminar este estudiante?')">Eliminar</button>
+                </form>
+            </td> <!-- Celda para los botones -->
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

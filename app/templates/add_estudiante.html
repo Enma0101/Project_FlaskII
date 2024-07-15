@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Estudiante</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <style>
+        .form-group label {
+            display: flex;
+            align-items: center;
+        }
+        .form-group label i {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Registro de Estudiante</h2>
+        <!-- Agrega la clase corner-logo al div que contiene la imagen -->
+        <div class="corner-logo">
+            <img src="{{ url_for('static', filename='imagen_gryffindor.png') }}" alt="Símbolo de Gryffindor">
+        </div>
+   
+        
+        <form action="/add_estudiante" method="POST">
+            <div class="form-group">
+                <label for="nombre"><i class="fas fa-user"></i>(Nombre completo)</label>
+                <div class="name-fields">
+                    <input type="text" id="nombre" name="nombre" placeholder="Nombre" required>
+                    <input type="text" id="apellido" name="apellido" placeholder="Apellido" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="dni_estudiante"><i class="far fa-id-card"></i>Dni</label>
+                <input type="text" id="dni_estudiante" name="dni_estudiante" placeholder="Numero de identificación" required>
+            </div>
+
+            <div class="form-group">
+                <label for="direccion"><i class="fas fa-map-marker-alt"></i>Dirección</label>
+                <input type="text" id="direccion" name="direccion" placeholder="Dirección" required>
+            </div>
+
+            <div class="form-group">
+                <label for="telefono"><i class="fas fa-phone"></i> Phone</label>
+                <input type="text" id="telefono" name="telefono" placeholder="Número de teléfono" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                <input type="email" id="email" name="email" placeholder="Dirección de correo electrónico" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="fecha_nacimiento"><i class="fas fa-calendar-alt"></i> Fecha De Nacimiento</label>
+                <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" placeholder="DD/MM/YYYY" required>
+            </div>
+
+            <div class="form-group">
+                <label for="genero"><i class="fas fa-venus-mars"></i>Género</label>
+                <select id="genero" name="genero" required>
+                    <option value="">Por favor seleccione</option>
+                    <option value="M">Masculino</option>
+                    <option value="F">Femenino</option>
+                </select>
+            </div>
+            
+            <button type="submit">Agregar</button>
+        </form>
+    </div>
+</body>
+</html>

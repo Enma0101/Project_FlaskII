@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urbe.Inst</title>
+    <style>
+        body {
+            font-family: 'Roboto Condensed', sans-serif;
+            background-color: #4F0F19; /* Fondo rojo */
+            color: #fff; /* Color de texto blanco */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; /* Alinea el contenido hacia arriba */
+            min-height: 100vh; /* Mínimo alto de la ventana */
+        }
+
+        h1 {
+            font-size: 36px; /* Tamaño del título */
+            margin: 30px 0 20px; /* Márgenes superior e inferior, 30px arriba y 20px abajo */
+        }
+
+        nav {
+            background-color: #d4a105; /* Color de fondo del menú */
+            padding: 20px 0; /* Espaciado interior */
+            width: 100%; /* Ancho completo */
+            text-align: center; /* Alineación del texto */
+        }
+
+        nav ul {
+            list-style-type: none; /* Quita los puntos de la lista */
+            padding: 0;
+        }
+
+        nav ul li {
+            display: inline; /* Alinea horizontalmente los elementos */
+            margin: 0 10px; /* Espacio entre elementos */
+        }
+
+        nav ul li a {
+            text-decoration: none; /* Quita el subrayado de los enlaces */
+            color: #fff; /* Color de texto blanco */
+            font-size: 18px; /* Tamaño de fuente */
+        }
+
+        nav ul li a:hover {
+            text-decoration: underline; /* Subraya al pasar el mouse */
+        }
+
+        p {
+            margin-top: auto; /* Coloca el párrafo al final */
+            margin-bottom: 20px; /* Margen inferior */
+            font-size: 16px; /* Tamaño de fuente */
+        }
+        .corner-logo {
+            position: absolute;
+            top: 20px; /* Ajusta según sea necesario */
+            right: 50px; /* Ajusta según sea necesario */
+            z-index: 1000; /* Ajusta según sea necesario */
+            border-radius: 50px;
+    }
+    .corner-logos {
+            position: absolute;
+            top: 15px; /* Ajusta según sea necesario */
+            left: 40px; /* Ajusta según sea necesario */
+            z-index: 1000; /* Ajusta según sea necesario */
+            border-radius: 50px;
+    }
+
+    /* Ajusta el tamaño de la imagen */
+    .corner-logos img {
+    width: 130px; /* Ajusta el ancho según sea necesario */
+    height: auto; 
+    /* Ajusta la altura automática para mantener la proporción */
+    border-radius: 10px;
+    }
+
+    /* Ajusta el tamaño de la imagen */
+    .corner-logo img {
+    width: 150px; /* Ajusta el ancho según sea necesario */
+    height: auto; 
+    /* Ajusta la altura automática para mantener la proporción */
+    border-radius: 10px;
+    }
+
+
+
+    </style>
+</head>
+<body>
+        <div class="corner-logo">
+            <img src="{{ url_for('static', filename='imagen_gryffindor.png') }}" alt="Símbolo de Gryffindor">
+        </div>
+
+        <div class="corner-logos">
+            <img src="{{ url_for('static', filename='imagen_Slytherin.png') }}" alt="Símbolo de Slytherin">
+        </div>
+    <h1>Centro de Formación Academica</h1>
+    <nav>
+        <ul>
+            
+            <li><a href="/add_estudiante">Registar Estudiante</a></li>
+            <li><a href="/estudiantes">Lista de Estudiantes</a></li>
+            <li><a href="/add_profesor">Registar profesor</a></li>
+            <li><a href="/profesores">Lista de profesor</a></li>
+            <!-- Añade más enlaces según necesites -->
+        </ul>
+    </nav>
+    <p>¡Explora las opciones disponibles!</p>
+</body>
+</html>
