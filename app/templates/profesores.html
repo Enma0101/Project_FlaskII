@@ -28,41 +28,34 @@
             width: 80%;
             margin-top: 20px;
             border-collapse: collapse;
-            background-color: rgba(51, 51, 51, 0.8); /* Fondo semi-transparente */
-            border-radius: 10px; /* Bordes redondeados */
-            overflow: hidden; /* Ocultar contenido que se desborde */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Sombra */
+            background-color: rgba(51, 51, 51, 0.8);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
         }
 
         th, td {
             padding: 10px;
             text-align: left;
-        }
-
-        th {
-            background-color: #1a472a; /* Fondo amarillo para encabezados */
-            color: #aaaaaa; /* Color del texto */
-        }
-
-        tr:nth-child(even) {
-            background-color: #333; /* Fondo para filas pares */
-        }
-
-        tr:nth-child(odd) {
-            background-color: #444; /* Fondo para filas impares */
-        }
-
-        td {
             border: 1px solid #444;
         }
 
-        table, th, td {
-            border: none;
+        th {
+            background-color: #e8bb05;
+            color: #333;
+        }
+
+        tr:nth-child(even) {
+            background-color: #333;
+        }
+
+        tr:nth-child(odd) {
+            background-color: #444;
         }
 
         .button {
-            background-color: #1a472a;
-            color: #aaaaaa;
+            background-color: #e8bb05;
+            color: #333;
             border: none;
             padding: 5px 10px;
             border-radius: 5px;
@@ -73,17 +66,78 @@
             margin-right: 5px;
             text-decoration: none;
             display: inline-block;
-            text-align: center;
         }
 
         .button:hover {
-            background-color: #1a472a;
+            background-color: #d4a105;
+        }
+
+        .button-container {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .button-back {
+            background-color: #e8bb05;
+            color: #1a1a1a;
+            border: none;
+            padding: 10px 40px;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: background-color 0.5s;
+            font-size: 16px;
+            font-family: 'Roboto Condensed', sans-serif;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+
+        .button-back:hover {
+            background-color: #d4a105;
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-label {
+            margin-right: 10px;
+        }
+
+        .search-input {
+            padding: 8px;
+            font-size: 14px;
+            border-radius: 55px;
+            border: 2px solid #d6d1d1;
+            background-color: rgba(51, 51, 51, 0.8);
+        }
+
+        .search-button {
+            background-color: #e8bb05;
+            color: #f1e6e6;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .search-button:hover {
+            background-color: #d4a105;
         }
     </style>
 </head>
 <body>
     <h1>Lista de Profesores</h1>
-    <table>
+
+    <!-- Barra de búsqueda -->
+    <div class="search-bar">
+        <label for="search" class="search-label">Buscar por DNI:</label>
+        <input type="text" id="search" class="search-input" onkeyup="filterProfessors()" placeholder="Ingrese DNI...">
+    </div>
+
+    <table id="professors-table">
         <tr>
             <th>ID</th>
             <th>DNI</th>
@@ -94,10 +148,10 @@
             <th>Teléfono</th>
             <th>Email</th>
             <th>Género</th>
-            <th>Acciones</th> <!-- Nueva columna para botones -->
+            <th>Acciones</th>
         </tr>
         {% for profesor in profesores %}
-        <tr>
+        <tr id="profesor-{{ profesor.id_profesor }}">
             <td>{{ profesor.id_profesor }}</td>
             <td>{{ profesor.dni_profesor }}</td>
             <td>{{ profesor.nombre }}</td>
@@ -112,9 +166,36 @@
                 <form method="POST" action="{{ url_for('delete_profesor', id=profesor.id_profesor) }}" style="display: inline;">
                     <button type="submit" class="button" onclick="return confirm('¿Estás seguro de eliminar este profesor?')">Eliminar</button>
                 </form>
-            </td> <!-- Celda para los botones -->
+                <a href="{{ url_for('profesor_cursos', id=profesor.id_profesor) }}" class="button">Ver Cursos Asignados</a>
+            </td>
         </tr>
         {% endfor %}
     </table>
+
+    <div class="button-container">
+        <a href="{{ url_for('index') }}" class="button button-back">Back</a>
+    </div>
+
+    <script>
+        function filterProfessors() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("search");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("professors-table");
+            tr = table.getElementsByTagName("tr");
+
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[1];
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+    </script>
 </body>
 </html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asignar Curso</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Asignar Curso a Profesor</h1>
+    <form method="POST">
+        <label for="dni_profesor">DNI Profesor:</label>
+        <input type="text" id="dni_profesor" name="dni_profesor" required autofocus>
+        <button type="button" id="buscar_profesor">Buscar Profesor</button>
+
+        <label for="nombre_profesor">Nombre Profesor:</label>
+        <input type="text" id="nombre_profesor" name="nombre_profesor" readonly>
+
+        <label for="id_categoria">Categoría:</label>
+        <select id="id_categoria" name="id_categoria" required>
+            <option value="" disabled selected>Seleccione una categoría</option>
+            {% for categoria in categorias %}
+                <option value="{{ categoria.id_categoria }}">{{ categoria.nombre }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="id_curso">Curso:</label>
+        <select id="id_curso" name="id_curso" required>
+            <option value="" disabled selected>Seleccione un curso</option>
+        </select>
+
+        <button type="submit" class="btn">Asignar Curso</button>
+    </form>
+
+    <script>
+        document.getElementById('buscar_profesor').addEventListener('click', function() {
+            var dniProfesor = document.getElementById('dni_profesor').value.trim();
+            fetch(`/get_profesor_by_dni/${dniProfesor}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.nombre_completo) {
+                        document.getElementById('nombre_profesor').value = data.nombre_completo;
+                        document.getElementById('id_profesor').value = data.id_profesor;
+                    } else {
+                        document.getElementById('nombre_profesor').value = 'Profesor no encontrado';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+
+        document.getElementById('id_categoria').addEventListener('change', function() {
+            var categoriaId = this.value;
+            fetch(`/get_cursos_by_categoria/${categoriaId}`)
+                .then(response => response.json())
+                .then(data => {
+                    var cursoSelect = document.getElementById('id_curso');
+                    cursoSelect.innerHTML = '<option value="" disabled selected>Seleccione un curso</option>';
+                    data.cursos.forEach(curso => {
+                        var option = document.createElement('option');
+                        option.value = curso.id_curso;
+                        option.textContent = curso.nombre_curso;
+                        cursoSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+</body>
+</html>
