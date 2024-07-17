@@ -167,6 +167,23 @@ def delete_estudiante(id):
 
 #----CRUD-pROFESORES----
 
+@app.route('/profesor/<int:id>/cursos')
+def profesor_cursos(id):
+    conn = get_db()
+    try:
+        cursor = conn.execute('''
+            SELECT Curso.nombre, Curso.descripcion
+            FROM Curso
+            JOIN CursoProfesor ON Curso.id_curso = CursoProfesor.id_curso
+            WHERE CursoProfesor.id_profesor = ?
+        ''', (id,))
+        cursos = cursor.fetchall()
+    except Exception as e:
+        return handle_error(f'Error al obtener los cursos asignados al profesor: {str(e)}', 'profesor_cursos.html' )
+    finally:
+        conn.close()
+
+    return render_template('profesor_cursos.html', cursos=cursos)
 
 
 # Rutas para profesores
@@ -183,8 +200,6 @@ def add_profesor():
             telefono = request.form['telefono']
             email = request.form['email']
             genero = request.form['genero']
-            #sssss
-            
 
             # Validación simple de campos
             errores = []
@@ -213,7 +228,7 @@ def add_profesor():
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ''', (dni_profesor, nombre, apellido, fecha_nacimiento, direccion, telefono, email, genero))
             conn.commit()
-           
+
             return redirect(url_for('profesores'))
         except sqlite3.IntegrityError as e:
             if 'UNIQUE constraint failed: Profesor.dni_profesor' in str(e):
@@ -229,7 +244,6 @@ def add_profesor():
     return render_template('add_profesor.html')
 
 
-
 @app.route('/profesores')
 def profesores():
     conn = get_db()
@@ -237,6 +251,7 @@ def profesores():
     profesores = cursor.fetchall()
     conn.close()
     return render_template('profesores.html', profesores=profesores)
+
 
 @app.route('/edit_profesor/<int:id>', methods=['GET', 'POST'])
 def edit_profesor(id):
@@ -292,13 +307,14 @@ def edit_profesor(id):
         conn.close()
         return render_template('edit_profesor.html', profesor=profesor, id=id)
 
+
 @app.route('/delete_profesor/<int:id>', methods=['POST'])
 def delete_profesor(id):
     conn = get_db()
     try:
         conn.execute('DELETE FROM Profesor WHERE id_profesor = ?', (id,))
         conn.commit()
-   
+
         return redirect(url_for('profesores'))
     except Exception as e:
         return handle_error(f'Error al eliminar profesor: {str(e)}')
@@ -564,6 +580,77 @@ def get_students(course_id):
     students = cursor.fetchall()
     conn.close()
     return jsonify([dict(row) for row in students])
+
+## para asignar un curso a un profesor 
+@app.route('/get_profesor_by_dni/<dni>', methods=['GET'])
+def get_profesor_by_dni(dni):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id_profesor, nombre, apellido FROM Profesor WHERE dni_profesor = ?", (dni,))
+    profesor = cursor.fetchone()
+    cursor.close()
+
+    if profesor:
+        return jsonify({
+            'id_profesor': profesor[0],
+            'nombre_completo': f"{profesor[1]} {profesor[2]}"
+        })
+    else:
+        return jsonify({'nombre_completo': None})
+
+@app.route('/get_cursos_by_categoria/<int:categoria_id>', methods=['GET'])
+def get_cursos_by_categoria(categoria_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id_curso, nombre_curso FROM Curso WHERE id_categoria = ?", (categoria_id,))
+    cursos = cursor.fetchall()
+    cursor.close()
+
+    return jsonify({'cursos': [{'id_curso': curso[0], 'nombre_curso': curso[1]} for curso in cursos]})
+
+@app.route('/asignar_curso', methods=['GET', 'POST'])
+def asignar_curso():
+    conn = get_db()
+    if request.method == 'POST':
+        dni_profesor = request.form['dni_profesor']
+        id_curso = request.form['id_curso']
+
+        cursor = conn.cursor()
+        cursor.execute("SELECT id_profesor FROM Profesor WHERE dni_profesor = ?", (dni_profesor,))
+        profesor = cursor.fetchone()
+
+        if not profesor:
+            flash('Profesor no encontrado', 'danger')
+            return redirect(url_for('asignar_curso'))
+
+        id_profesor = profesor[0]
+
+        try:
+            # Verificar si la asignación ya existe
+            cursor.execute("SELECT * FROM CursoProfesor WHERE id_profesor = ? AND id_curso = ?", (id_profesor, id_curso))
+            if cursor.fetchone() is not None:
+                flash('Este curso ya ha sido asignado a este profesor.', 'danger')
+            else:
+                # Insertar la nueva asignación
+                cursor.execute("INSERT INTO CursoProfesor (id_curso, id_profesor) VALUES (?, ?)", (id_curso, id_profesor))
+                conn.commit()
+                flash('Curso asignado exitosamente.', 'success')
+        except Exception as e:
+            conn.rollback()
+            flash(str(e), 'danger')
+        finally:
+            cursor.close()
+
+        return redirect(url_for('asignar_curso'))
+
+    # Obtener las categorías para el formulario
+    cursor = conn.cursor()
+    cursor.execute("SELECT id_categoria, nombre FROM Categoria")
+    categorias = cursor.fetchall()
+    cursor.close()
+
+    return render_template('asignar_curso.html', categorias=categorias)
+
 
 
 if __name__ == '__main__':
