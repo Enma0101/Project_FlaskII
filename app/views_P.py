@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, g, redirect, url_for, flash
+from flask import Flask, render_template, request, g, redirect, url_for, flash, jsonify
 import sqlite3
 
 app = Flask(__name__)
@@ -436,11 +436,123 @@ def edit_curso(id_curso):
 
 
 # Resto de las rutas y funciones existentes...
+#Matricula
+@app.route('/matricula', methods=['GET', 'POST'])
+def matricula():
+    conn = get_db()
+    if request.method == 'POST':
+        try:
+            dni_estudiante = request.form['dni_estudiante']
+            id_curso = request.form['id_curso']
+            fecha_matricula = request.form['fecha_matricula']
+
+            # Obtener el ID del estudiante usando el DNI
+            cursor = conn.execute('SELECT id_estudiante FROM Estudiante WHERE dni_estudiante = ?', (dni_estudiante,))
+            estudiante = cursor.fetchone()
+            if estudiante:
+                id_estudiante = estudiante['id_estudiante']
+
+                # Insertar la matrícula en la base de datos
+                conn.execute('''
+                    INSERT INTO Matricula (id_estudiante, id_curso, fecha_matricula)
+                    VALUES (?, ?, ?)
+                ''', (id_estudiante, id_curso, fecha_matricula))
+                conn.commit()
+                return redirect(url_for('ver_matriculas'))
+            else:
+                return 'No se encontró ningún estudiante con el DNI proporcionado.'
+        except Exception as e:
+            return f'Error al registrar matrícula: {str(e)}'
+        finally:
+            conn.close()
+    else:
+        estudiantes = conn.execute('SELECT id_estudiante, dni_estudiante, nombre || " " || apellido as nombre_completo FROM Estudiante').fetchall()
+        cursos = conn.execute('SELECT id_curso, nombre_curso FROM Curso').fetchall()
+        conn.close()
+        return render_template('matricula.html', estudiantes=estudiantes, cursos=cursos)
+    
+@app.route('/get_student_name_by_dni/<dni>', methods=['GET'])
+def get_student_name_by_dni(dni):
+    conn = get_db()
+    cursor = conn.execute('SELECT nombre, apellido FROM Estudiante WHERE dni_estudiante = ?', (dni,))
+    estudiante = cursor.fetchone()
+    conn.close()
+    if estudiante:
+        nombre_completo = f"{estudiante['nombre']} {estudiante['apellido']}"
+        return jsonify({'nombre_completo': nombre_completo})
+    else:
+        return jsonify({'nombre_completo': None})
+
+     
+@app.route('/ver_matriculas')
+def ver_matriculas():
+    conn = get_db()
+    cursor = conn.execute('''
+        SELECT m.id_matricula, e.nombre as estudiante, c.nombre_curso as curso, m.fecha_matricula
+        FROM Matricula m
+        JOIN Estudiante e ON m.id_estudiante = e.id_estudiante
+        JOIN Curso c ON m.id_curso = c.id_curso  
+    ''')
+    matriculas = cursor.fetchall()
+    conn.close()
+    return render_template('ver_matriculas.html', matriculas=matriculas)
 
 
+#Asignar notas
+@app.route('/asignar_nota', methods=['GET', 'POST'])
+def asignar_nota():
+    if request.method == 'POST':
+        try:
+            id_estudiante = request.form['id_estudiante']
+            id_curso = request.form['id_curso']
+            nota = request.form['nota']
 
+            conn = get_db()
+            conn.execute('''
+                INSERT INTO Notas (id_estudiante, id_curso, nota)
+                VALUES (?, ?, ?)
+            ''', (id_estudiante, id_curso, nota))
+            conn.commit()
+            conn.close()
 
+            return redirect(url_for('ver_notas'))
+        except Exception as e:
+            return f'Error al asignar nota: {str(e)}'
+    else:
+        conn = get_db()
+        estudiantes = conn.execute('SELECT id_estudiante, nombre, apellido FROM Estudiante').fetchall()
+        cursos = conn.execute('SELECT id_curso, nombre_curso FROM Curso').fetchall()
+        conn.close()
+        return render_template('asignar_nota.html', estudiantes=estudiantes, cursos=cursos)
 
+@app.route('/get_categories', methods=['GET'])
+def get_categories():
+    conn = get_db()
+    cursor = conn.execute('SELECT id, nombre FROM Categoria')
+    categories = cursor.fetchall()
+    conn.close()
+    return jsonify([dict(row) for row in categories])
+
+@app.route('/get_courses/<int:category_id>', methods=['GET'])
+def get_courses(category_id):
+    conn = get_db()
+    cursor = conn.execute('SELECT id, nombre FROM Curso WHERE categoria_id = ?', (category_id,))
+    courses = cursor.fetchall()
+    conn.close()
+    return jsonify([dict(row) for row in courses])
+
+@app.route('/get_students/<int:course_id>', methods=['GET'])
+def get_students(course_id):
+    conn = get_db()
+    cursor = conn.execute('''
+        SELECT e.id_estudiante, e.dni_estudiante, e.nombre, e.apellido 
+        FROM Estudiante e
+        JOIN Matricula m ON e.id_estudiante = m.id_estudiante
+        WHERE m.id_curso = ?
+    ''', (course_id,))
+    students = cursor.fetchall()
+    conn.close()
+    return jsonify([dict(row) for row in students])
 
 
 if __name__ == '__main__':
