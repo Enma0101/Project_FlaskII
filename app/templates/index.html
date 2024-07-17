@@ -61,52 +61,50 @@
             right: 50px; /* Ajusta según sea necesario */
             z-index: 1000; /* Ajusta según sea necesario */
             border-radius: 50px;
-    }
-    .corner-logos {
+        }
+        .corner-logos {
             position: absolute;
             top: 15px; /* Ajusta según sea necesario */
             left: 40px; /* Ajusta según sea necesario */
             z-index: 1000; /* Ajusta según sea necesario */
             border-radius: 50px;
-    }
+        }
 
-    /* Ajusta el tamaño de la imagen */
-    .corner-logos img {
-    width: 130px; /* Ajusta el ancho según sea necesario */
-    height: auto; 
-    /* Ajusta la altura automática para mantener la proporción */
-    border-radius: 10px;
-    }
+        /* Ajusta el tamaño de la imagen */
+        .corner-logos img {
+            width: 130px; /* Ajusta el ancho según sea necesario */
+            height: auto; 
+            /* Ajusta la altura automática para mantener la proporción */
+            border-radius: 10px;
+        }
 
-    /* Ajusta el tamaño de la imagen */
-    .corner-logo img {
-    width: 150px; /* Ajusta el ancho según sea necesario */
-    height: auto; 
-    /* Ajusta la altura automática para mantener la proporción */
-    border-radius: 10px;
-    }
-
-
-
+        /* Ajusta el tamaño de la imagen */
+        .corner-logo img {
+            width: 150px; /* Ajusta el ancho según sea necesario */
+            height: auto; 
+            /* Ajusta la altura automática para mantener la proporción */
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
-        <div class="corner-logo">
-            <img src="{{ url_for('static', filename='imagen_gryffindor.png') }}" alt="Símbolo de Gryffindor">
-        </div>
+    <div class="corner-logo">
+        <img src="{{ url_for('static', filename='imagen_gryffindor.png') }}" alt="Símbolo de Gryffindor">
+    </div>
 
-        <div class="corner-logos">
-            <img src="{{ url_for('static', filename='imagen_Slytherin.png') }}" alt="Símbolo de Slytherin">
-        </div>
-    <h1>Centro de Formación Academica</h1>
+    <div class="corner-logos">
+        <img src="{{ url_for('static', filename='imagen_Slytherin.png') }}" alt="Símbolo de Slytherin">
+    </div>
+    <h1>Centro de Formación Académica</h1>
     <nav>
         <ul>
-            
-            <li><a href="/add_estudiante">Registar Estudiante</a></li>
+            <li><a href="/add_estudiante">Registrar Estudiante</a></li>
             <li><a href="/estudiantes">Lista de Estudiantes</a></li>
-            <li><a href="/add_profesor">Registar profesor</a></li>
-            <li><a href="/profesores">Lista de profesor</a></li>
-            <!-- Añade más enlaces según necesites -->
+            <li><a href="/add_profesor">Registrar Profesor</a></li>
+            <li><a href="/matricula">Matricula</a></li>
+            <li><a href="/asignar_nota">Asignar Notas</a></li>
+            <li><a href="/profesores">Lista de Profesores</a></li>
+            <li><a href="/categorias">Lista de Categorías</a></li>
         </ul>
     </nav>
     <p>¡Explora las opciones disponibles!</p>

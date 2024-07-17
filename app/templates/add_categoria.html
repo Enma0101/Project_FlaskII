@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar Categoría</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Roboto Condensed', sans-serif;
+            background-color: #4F0F19;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: rgba(51, 51, 51, 0.8);
+            border-radius: 50px;
+            padding: 50px;
+            width: 555px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            color: #fff;
+            text-align: center;
+            margin-top: 100px;
+        }
+
+        .container h2 {
+            color: #fff;
+            margin-bottom: 50px;
+            font-size: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 20px;
+            color: #EEEEEE;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 95%;
+            padding: 15px;
+            border-radius: 15px; /* Esquinas menos redondeadas */
+            border: 2px solid #B1B1B7;
+            background-color: #202020;
+            color: #cec4c4;
+            margin-top: 10px;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: #cec4c4;
+        }
+
+        .form-group textarea {
+            resize: none; /* Deshabilita el redimensionamiento */
+            height: 100px; /* Altura inicial */
+        }
+
+        .buttons {
+            display: flex;
+           
+            gap: 1px; /* Espacio entre botones */
+            margin-top: 40px; /* Espacio superior */
+            margin-left: auto;
+        }
+
+    
+        .buttons button,
+        .buttons a {
+            background-color: #e8bb05;  /* Cambia el color de fondo del botón */
+            color: #333;  /* Cambia el color del texto del botón */
+            border: none;
+            margin-top: 40px;
+            padding: 10px 40px;  /* Alarga el botón */
+            border-radius: 100px;
+            cursor: pointer;
+            transition: background-color 0.5s;
+            font-size: 18px; /* Aumenta el tamaño de la fuente del botón */
+            font-family: 'Roboto Condensed', sans-serif;
+            margin-left: auto;  /* Posiciona el botón a la derecha */
+            display: block;
+            text-decoration: none;
+   
+        }
+
+        .buttons button:hover,
+        .buttons a:hover {
+            background-color: #d4a105;
+        }
+    </style>
+
+
+
+
+
+
+
+</head>
+<body>
+    <div class="container">
+        <h2>Agregar Nueva Categoría</h2>
+        <form action="{{ url_for('add_categoria') }}" method="post">
+            <div class="form-group">
+                <label for="nombre">Nombre de la Categoría:</label>
+                <input type="text" id="nombre" name="nombre" required>
+            </div>
+            <div class="buttons">
+            <button type="submit">Agregar</button>
+        </form>
+        <a href="{{ url_for('categorias') }}" class="button">Volver a Categorías</a>
+        </div>
+    </div>
+</body>
+</html>

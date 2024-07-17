@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Categorías</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Roboto Condensed', sans-serif;
+            background-color: #4F0F19;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+
+        .categorias-container {
+            width: 80%;
+            max-width: 800px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: rgba(51, 51, 51, 0.8);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px; /* Separación de la tabla hacia abajo */
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #444;
+        }
+
+        th {
+            background-color: #e8bb05;
+            color: #333;
+        }
+
+        tr:nth-child(even) {
+            background-color: #333;
+        }
+
+        tr:nth-child(odd) {
+            background-color: #444;
+        }
+
+        .acciones {
+            text-align: right;
+        }
+
+        .button-container {
+            text-align: right; /* Alineación del botón hacia la derecha */
+            margin-top: 10px; /* Separación superior del botón */
+        }
+
+        .button {
+            background-color: #e8bb05;
+            color: #1d1d1d;
+            border: none;
+            padding: 5px 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 12px;
+            font-family: 'Roboto Condensed', sans-serif;
+            text-decoration: none;
+            font-size: 15px; /* Aumenta el tamaño de la letra */
+             
+            margin-left: 5px; /* Margen izquierdo para separar los botones */
+        }
+
+        .button:hover {
+            background-color: #d4a105;
+        }
+
+        .alert {
+            padding: 15px;
+            background-color: #dbdada; /* Color de fondo rojo */
+            color: rgb(10, 10, 10); /* Color de texto blanco */
+            margin-bottom: 15px; /* Espacio inferior */
+            border-radius: 5px; /* Bordes redondeados */
+            text-align: center; /* Texto centrado */
+        }
+
+        /* Estilos personalizados para los botones Back y Agregar Categoría */
+        .button-back {
+            background-color:#e8bb05;
+            color: #1a1a1a;
+            border: none;
+            margin-top: 40px;
+            padding: 10px 40px;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: background-color 0.5s;
+            font-size: 16px; /* Aumenta el tamaño de la letra */
+            font-family: 'Roboto Condensed', sans-serif;
+            text-decoration: none;
+             
+            margin-left: 5px; /* Margen izquierdo para separar los botones */
+        }
+
+        .button-back:hover {
+            background-color: #e8bb05;
+        }
+
+        .button-add {
+            background-color: #e8bb05;
+            color: #1a1a1a;
+            border: none;
+            margin-top: 40px;
+            padding: 10px 40px;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: background-color 0.5s;
+            font-size: 16px; /* Aumenta el tamaño de la letra */
+            font-family: 'Roboto Condensed', sans-serif;
+            text-decoration: none;
+             
+            margin-left: 5px; /* Margen izquierdo para separar los botones */
+        }
+
+        .button-add:hover {
+            background-color: #e8bb05;
+        }
+    </style>
+</head>
+<body>
+    <div class="categorias-container">
+        <h1>Lista de Categorías</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th class="acciones">Acciones</th>
+            </tr>
+            {% for categoria in categorias %}
+            <tr>
+                <td>{{ categoria.id_categoria }}</td>
+                <td>{{ categoria.nombre }}</td>
+                <td class="acciones">
+                    <a href="{{ url_for('cursos', id_categoria=categoria.id_categoria) }}" class="button">Ver Cursos</a>
+                    <a href="{{ url_for('edit_categoria', id_categoria=categoria.id_categoria) }}" class="button">Editar</a>
+                    <form method="POST" action="{{ url_for('delete_categoria', id=categoria.id_categoria) }}" style="display: inline;">
+                        <button type="submit" class="button" onclick="return confirm('¿Estás seguro de eliminar esta categoría?')">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        
+        <div class="button-container">
+            <a href="{{ url_for('add_categoria') }}" class="button button-add">Agregar Categoría</a>
+            <a href="{{ url_for('index') }}" class="button button-back">Back</a>
+        </div>
+    </div>
+</body>
+</html>

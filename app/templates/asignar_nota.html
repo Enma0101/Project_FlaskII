@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asignar Notas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='notas.css') }}">
+</head>
+<body>
+    <h1>Asignar Notas</h1>
+    <form id="nota-form" action="/asignar_nota" method="POST">
+        <div>
+            <label for="categoria">Categoría:</label>
+            <select id="categoria" name="categoria" required>
+                <option value="">Selecciona una categoría</option>
+                {% for categoria in categorias %}
+                    <option value="{{ categoria.id_categoria }}">{{ categoria.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="curso">Curso:</label>
+            <select id="curso" name="curso" required>
+                <option value="">Selecciona un curso</option>
+            </select>
+        </div>
+        <div>
+            <label for="estudiante">Estudiante:</label>
+            <select id="estudiante" name="estudiante" required>
+                <option value="">Selecciona un estudiante</option>
+            </select>
+        </div>
+        <div>
+            <label for="dni_estudiante">Cédula del Estudiante:</label>
+            <input type="text" id="dni_estudiante" name="dni_estudiante" readonly>
+        </div>
+        <form>
+            <div>
+                <label for="campo-notas">Nota:</label>
+                <input type="number" id="campo-notas" name="nota" required>
+                <button type="button" class="btn">Agregar nota</button>
+            </div>
+        </form>
+    </form>
+
+    <script>
+        //JS para la extraccion de datos
+        document.getElementById('categoria').addEventListener('change', function() {
+            var categoriaId = this.value;
+            fetch(`/get_cursos_by_categoria/${categoriaId}`)
+                .then(response => response.json())
+                .then(data => {
+                    var cursoSelect = document.getElementById('curso');
+                    cursoSelect.innerHTML = '<option value="">Selecciona un curso</option>';
+                    data.forEach(curso => {
+                        var option = document.createElement('option');
+                        option.value = curso.id_curso;
+                        option.textContent = curso.nombre_curso;
+                        cursoSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('curso').addEventListener('change', function() {
+            var cursoId = this.value;
+            fetch(`/get_estudiantes_by_curso/${cursoId}`)
+                .then(response => response.json())
+                .then(data => {
+                    var estudianteSelect = document.getElementById('estudiante');
+                    estudianteSelect.innerHTML = '<option value="">Selecciona un estudiante</option>';
+                    data.forEach(estudiante => {
+                        var option = document.createElement('option');
+                        option.value = estudiante.id_estudiante;
+                        option.textContent = `${estudiante.nombre} ${estudiante.apellido}`;
+                        estudianteSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('estudiante').addEventListener('change', function() {
+            var estudianteId = this.value;
+            fetch(`/get_dni_by_estudiante/${estudianteId}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('dni_estudiante').value = data.dni_estudiante;
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>

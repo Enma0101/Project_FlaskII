@@ -73,15 +73,41 @@
             margin-right: 5px;
             text-decoration: none;
             display: inline-block;
-            text-align: center;
+         
         }
 
         .button:hover {
             background-color: #d4a105;
         }
+
+        .button-container {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .button-back {
+            text-align: right;
+            background-color: #e8bb05;
+            color: #1a1a1a;
+            border: none;
+            padding: 10px 40px;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: background-color 0.5s;
+            font-size: 16px;
+            font-family: 'Roboto Condensed', sans-serif;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+
+        .button-back:hover {
+            background-color: #d4a105;
+        }
     </style>
 </head>
 <body>
+   
+
     <h1>Lista de Estudiantes</h1>
     <table>
         <tr>
@@ -116,5 +142,9 @@
         </tr>
         {% endfor %}
     </table>
+
+         <div class="button-container">
+        <a href="{{ url_for('index') }}" class="button button-back">Volver a la página principal</a>
+        </div>
 </body>
 </html>
