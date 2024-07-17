@@ -467,9 +467,10 @@ def matricula():
             conn.close()
     else:
         estudiantes = conn.execute('SELECT id_estudiante, dni_estudiante, nombre || " " || apellido as nombre_completo FROM Estudiante').fetchall()
+        categorias = conn.execute('SELECT id_categoria, nombre FROM Categoria').fetchall()
         cursos = conn.execute('SELECT id_curso, nombre_curso FROM Curso').fetchall()
         conn.close()
-        return render_template('matricula.html', estudiantes=estudiantes, cursos=cursos)
+        return render_template('matricula.html', estudiantes=estudiantes, categorias=categorias, cursos=cursos)
     
 @app.route('/get_student_name_by_dni/<dni>', methods=['GET'])
 def get_student_name_by_dni(dni):
@@ -521,9 +522,10 @@ def asignar_nota():
     else:
         conn = get_db()
         estudiantes = conn.execute('SELECT id_estudiante, nombre, apellido FROM Estudiante').fetchall()
+        categorias = conn.execute('SELECT id_categoria, nombre FROM Categoria').fetchall()
         cursos = conn.execute('SELECT id_curso, nombre_curso FROM Curso').fetchall()
         conn.close()
-        return render_template('asignar_nota.html', estudiantes=estudiantes, cursos=cursos)
+        return render_template('asignar_nota.html', estudiantes=estudiantes, cursos=cursos, categorias=categorias)
 
 @app.route('/get_categories', methods=['GET'])
 def get_categories():
