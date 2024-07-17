@@ -17,6 +17,19 @@
     margin: 0;
 }
 
+.form-group label {
+            display: flex;
+            align-items: center;
+        }
+        .form-group label i {
+            margin-right: 5px;
+        }
+        .error-message {
+            color: red;
+            font-size: 0.8rem;
+            margin-top: 0.2rem;
+        }
+
     </style>
 
 
@@ -30,15 +43,16 @@
         </div>
 
         <!-- Mostrar errores -->
-        {% if errores %}
-        <div class="alert alert-danger">
-            <ul>
-                {% for error in errores %}
-                <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
-        </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
         {% endif %}
+        {% endwith %}
+    
 
         <form action="{{ url_for('add_profesor') }}" method="post">
             <div class="form-group">
@@ -52,11 +66,17 @@
             <div class="form-group">
                 <label for="dni"><i class="far fa-id-card"></i> DNI</label>
                 <input type="text" id="dni" name="dni" placeholder="Número de identificación" required>
+                   {% if errores and 'El DNI es obligatorio.' in errores %}
+                    <p class="error-message">El DNI es obligatorio.</p>
+                {% endif %}
             </div>
 
             <div class="form-group">
                 <label for="direccion"><i class="fas fa-map-marker-alt"></i> Dirección</label>
                 <input type="text" id="direccion" name="direccion" placeholder="Dirección" required>
+                {% if errores and 'La dirección es obligatoria.' in errores %}
+                <p class="error-message">La dirección es obligatoria.</p>
+            {% endif %}
             </div>
 
             <div class="form-group">
@@ -67,11 +87,20 @@
             <div class="form-group">
                 <label for="email"><i class="fas fa-envelope"></i> Email</label>
                 <input type="email" id="email" name="email" placeholder="Dirección de correo electrónico" required>
+                {% if errores and 'El email es obligatorio.' in errores %}
+                <p class="error-message">El email es obligatorio.</p>
+            {% endif %}
+            {% if error_email %}
+                <p class="error-message">{{ error_email }}</p>
+            {% endif %}
             </div>
 
             <div class="form-group">
                 <label for="fecha_nacimiento"><i class="fas fa-calendar-alt"></i> Fecha de Nacimiento</label>
                 <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" placeholder="DD/MM/YYYY" required>
+                {% if errores and 'La fecha de nacimiento es obligatoria.' in errores %}
+                <p class="error-message">La fecha de nacimiento es obligatoria.</p>
+            {% endif %}
             </div>
 
             <div class="form-group">
@@ -81,6 +110,9 @@
                     <option value="M">Masculino</option>
                     <option value="F">Femenino</option>
                 </select>
+                {% if errores and 'El género es obligatorio.' in errores %}
+                <p class="error-message">El género es obligatorio.</p>
+            {% endif %}
             </div>
 
             <button type="submit">Agregar</button>

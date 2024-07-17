@@ -156,7 +156,7 @@ def delete_estudiante(id):
     try:
         conn.execute('DELETE FROM Estudiante WHERE id_estudiante = ?', (id,))
         conn.commit()
-        flash('Estudiante eliminado correctamente.', 'success')
+        
         return redirect(url_for('estudiantes'))
     except Exception as e:
         return handle_error(f'Error al eliminar estudiante: {str(e)}', 'estudiantes.html')
@@ -211,13 +211,22 @@ def add_profesor():
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ''', (dni_profesor, nombre, apellido, fecha_nacimiento, direccion, telefono, email, genero))
             conn.commit()
-            flash('Profesor agregado correctamente.', 'success')
+           
             return redirect(url_for('profesores'))
+        except sqlite3.IntegrityError as e:
+            if 'UNIQUE constraint failed: Profesor.dni_profesor' in str(e):
+                flash('El DNI ya está registrado.', 'danger')
+            elif 'UNIQUE constraint failed: Profesor.email' in str(e):
+                flash('El correo electrónico ya está registrado.', 'danger')
+            else:
+                return handle_error(f'Error al agregar profesor: {str(e)}', 'add_profesor.html')
         except Exception as e:
-            return handle_error(f'Error al agregar profesor: {str(e)}')
+            return handle_error(f'Error al agregar profesor: {str(e)}', 'add_profesor.html')
         finally:
             conn.close()
     return render_template('add_profesor.html')
+
+
 
 @app.route('/profesores')
 def profesores():
@@ -287,7 +296,7 @@ def delete_profesor(id):
     try:
         conn.execute('DELETE FROM Profesor WHERE id_profesor = ?', (id,))
         conn.commit()
-        flash('Profesor eliminado correctamente.', 'success')
+   
         return redirect(url_for('profesores'))
     except Exception as e:
         return handle_error(f'Error al eliminar profesor: {str(e)}')
