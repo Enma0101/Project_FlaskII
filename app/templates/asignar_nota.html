@@ -19,52 +19,55 @@
             </select>
         </div>
         <div>
-            <label for="curso">Curso:</label>
-            <select id="curso" name="curso" required>
-                <option value="">Selecciona un curso</option>
+            <label for="id_curso">Curso:</label>
+            <select id="id_curso" name="id_curso" required>
+                <option value="" disabled selected>Seleccione un curso</option>
+                {% for curso in cursos %}
+                    <option value="{{ curso.id_curso }}">{{ curso.nombre_curso }}</option>
+                {% endfor %}
             </select>
         </div>
         <div>
             <label for="estudiante">Estudiante:</label>
-            <select id="estudiante" name="estudiante" required>
+            <select id="estudiante" name="id_estudiante" required>
                 <option value="">Selecciona un estudiante</option>
+                {% for estudiante in estudiantes %}
+                    <option value="{{ estudiante.id_estudiante }}">{{ estudiante.nombre }} {{ estudiante.apellido }}</option>
+                {% endfor %}
             </select>
         </div>
         <div>
             <label for="dni_estudiante">Cédula del Estudiante:</label>
             <input type="text" id="dni_estudiante" name="dni_estudiante" readonly>
         </div>
-        <form>
-            <div>
-                <label for="campo-notas">Nota:</label>
-                <input type="number" id="campo-notas" name="nota" required>
-                <button type="button" class="btn">Agregar nota</button>
-            </div>
-        </form>
+        <div>
+            <label for="campo-notas">Nota:</label>
+            <input type="number" id="campo-notas" name="nota" required>
+            <button type="submit" class="btn">Agregar nota</button>
+        </div>
     </form>
 
     <script>
-        //JS para la extraccion de datos
         document.getElementById('categoria').addEventListener('change', function() {
             var categoriaId = this.value;
-            fetch(`/get_cursos_by_categoria/${categoriaId}`)
+            fetch(`/get_courses/${categoriaId}`)
                 .then(response => response.json())
                 .then(data => {
-                    var cursoSelect = document.getElementById('curso');
-                    cursoSelect.innerHTML = '<option value="">Selecciona un curso</option>';
+                    var cursoSelect = document.getElementById('id_curso');
+                    cursoSelect.innerHTML = '<option value="" disabled selected>Seleccione un curso</option>';
                     data.forEach(curso => {
                         var option = document.createElement('option');
-                        option.value = curso.id_curso;
-                        option.textContent = curso.nombre_curso;
+                        option.value = curso.id;
+                        option.textContent = curso.nombre;
                         cursoSelect.appendChild(option);
                     });
                 })
                 .catch(error => console.error('Error:', error));
         });
 
-        document.getElementById('curso').addEventListener('change', function() {
+        document.getElementById('id_curso').addEventListener('change', function() {
             var cursoId = this.value;
-            fetch(`/get_estudiantes_by_curso/${cursoId}`)
+            fetch(`/get_students/${cursoId}`)
                 .then(response => response.json())
                 .then(data => {
                     var estudianteSelect = document.getElementById('estudiante');

@@ -446,6 +446,17 @@ def matricula():
             id_curso = request.form['id_curso']
             fecha_matricula = request.form['fecha_matricula']
 
+            # Chequear si estudiante esta inscrito en el curso
+            cursor = conn.execute('''
+                SELECT id_estudiante FROM Matricula 
+                WHERE id_estudiante = (SELECT id_estudiante FROM Estudiante WHERE dni_estudiante = ?)
+                AND id_curso = ?
+            ''', (dni_estudiante, id_curso))
+            existing_matricula = cursor.fetchone()
+
+            if existing_matricula:
+                return 'Este estudiante ya está matriculado en este curso.'
+
             # Obtener el ID del estudiante usando el DNI
             cursor = conn.execute('SELECT id_estudiante FROM Estudiante WHERE dni_estudiante = ?', (dni_estudiante,))
             estudiante = cursor.fetchone()
@@ -471,7 +482,7 @@ def matricula():
         cursos = conn.execute('SELECT id_curso, nombre_curso FROM Curso').fetchall()
         conn.close()
         return render_template('matricula.html', estudiantes=estudiantes, categorias=categorias, cursos=cursos)
-    
+
 @app.route('/get_student_name_by_dni/<dni>', methods=['GET'])
 def get_student_name_by_dni(dni):
     conn = get_db()
@@ -485,8 +496,8 @@ def get_student_name_by_dni(dni):
         return jsonify({'nombre_completo': None})
 
      
-@app.route('/ver_matriculas')
-def ver_matriculas():
+@app.route('/matricula')
+def matriculas():
     conn = get_db()
     cursor = conn.execute('''
         SELECT m.id_matricula, e.nombre as estudiante, c.nombre_curso as curso, m.fecha_matricula
@@ -496,7 +507,7 @@ def ver_matriculas():
     ''')
     matriculas = cursor.fetchall()
     conn.close()
-    return render_template('ver_matriculas.html', matriculas=matriculas)
+    return render_template('matricula.html', matriculas=matriculas)
 
 
 #Asignar notas
