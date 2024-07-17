@@ -9,6 +9,18 @@
 <body>
     <h1>Registrar Matrícula</h1>
     <form method="POST">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="flashes">
+        {% for category, message in messages %}
+        <div class="alert">
+            {{ message }}
+        </div>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
         <label for="dni_estudiante">DNI Estudiante:</label>
         <input type="text" id="dni_estudiante" name="dni_estudiante" required autofocus>
 
@@ -34,7 +46,10 @@
         <label for="fecha_matricula">Fecha de Matrícula:</label>
         <input type="date" id="fecha_matricula" name="fecha_matricula" required>
 
-        <button type="submit" class="btn">Registrar Matrícula</button>
+        <div class="button-container">
+            <button type="submit" class="btn">Registrar Matrícula</button>
+            <a href="{{ url_for('index') }}" class="button button-back">Back</a>
+        </div>
     </form>
 
     <script>

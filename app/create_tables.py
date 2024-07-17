@@ -61,15 +61,15 @@ print("Tabla Matricula creada")
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS NotaFinal (
     id_nota_final INTEGER PRIMARY KEY AUTOINCREMENT,
-    id_estudiante INTEGER,
     id_matricula INTEGER,
-    id_materia INTEGER,
     nota_final DECIMAL(5,2) NOT NULL,
     
     FOREIGN KEY(id_matricula) REFERENCES Matricula(id_matricula) ON DELETE RESTRICT
 )
 ''')
 print("Tabla NotaFinal creada")
+
+#webon
 
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS Categoria (

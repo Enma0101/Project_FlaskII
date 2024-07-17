@@ -7,6 +7,16 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='notas.css') }}">
 </head>
 <body>
+    <div class="flash-messages">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
     <h1>Asignar Notas</h1>
     <form id="nota-form" action="/asignar_nota" method="POST">
         <div>
@@ -44,6 +54,7 @@
             <label for="campo-notas">Nota:</label>
             <input type="number" id="campo-notas" name="nota" required>
             <button type="submit" class="btn">Agregar nota</button>
+            <a href="{{ url_for('index') }}" class="button button-back">Back</a>
         </div>
     </form>
 
@@ -90,6 +101,15 @@
                     document.getElementById('dni_estudiante').value = data.dni_estudiante;
                 })
                 .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('campo-notas').addEventListener('input', function() {
+            var nota = parseFloat(this.value);
+            if (nota < 0 || nota > 20 || isNaN(nota)) {
+                this.setCustomValidity('La nota debe estar entre 0 y 20');
+            } else {
+                this.setCustomValidity('');
+            }
         });
     </script>
 </body>

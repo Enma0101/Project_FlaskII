@@ -45,16 +45,48 @@ select {
 
 .btn {
     background-color: #e8bb05;
-    color: #333;
+    color: #1a1a1a;
     border: none;
     padding: 10px 20px;
-    border-radius: 5px;
+    border-radius: 100px;
     cursor: pointer;
     transition: background-color 0.3s;
     font-size: 16px;
     font-family: 'Roboto Condensed', sans-serif;
 }
 
+.button-container {
+    justify-content: space-between;
+}
+
 .btn:hover {
     background-color: #d4a105;
 }
+
+.button-back {
+    background-color:#e8bb05;
+    color: #1a1a1a;
+    border: none;
+    padding: 10px 40px;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: background-color 0.5s;
+    font-size: 16px; 
+    font-family: 'Roboto Condensed', sans-serif;
+    text-decoration: none;
+    margin-left: 400px; /* Margen izquierdo para separar los botones */
+}
+
+.button-back:hover {
+    background-color: #e8bb05;
+}
+
+.alert {
+    padding: 15px;
+    background-color: #dbdada; /* Color de fondo rojo */
+    color: rgb(10, 10, 10); /* Color de texto blanco */
+    margin-bottom: 15px; /* Espacio inferior */
+    border-radius: 5px; /* Bordes redondeados */
+    text-align: center; /* Texto centrado */
+}
+

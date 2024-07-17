@@ -156,7 +156,7 @@ def delete_estudiante(id):
     try:
         conn.execute('DELETE FROM Estudiante WHERE id_estudiante = ?', (id,))
         conn.commit()
-        flash('Estudiante eliminado correctamente.', 'success')
+        
         return redirect(url_for('estudiantes'))
     except Exception as e:
         return handle_error(f'Error al eliminar estudiante: {str(e)}', 'estudiantes.html')
@@ -211,13 +211,22 @@ def add_profesor():
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ''', (dni_profesor, nombre, apellido, fecha_nacimiento, direccion, telefono, email, genero))
             conn.commit()
-            flash('Profesor agregado correctamente.', 'success')
+           
             return redirect(url_for('profesores'))
+        except sqlite3.IntegrityError as e:
+            if 'UNIQUE constraint failed: Profesor.dni_profesor' in str(e):
+                flash('El DNI ya está registrado.', 'danger')
+            elif 'UNIQUE constraint failed: Profesor.email' in str(e):
+                flash('El correo electrónico ya está registrado.', 'danger')
+            else:
+                return handle_error(f'Error al agregar profesor: {str(e)}', 'add_profesor.html')
         except Exception as e:
-            return handle_error(f'Error al agregar profesor: {str(e)}')
+            return handle_error(f'Error al agregar profesor: {str(e)}', 'add_profesor.html')
         finally:
             conn.close()
     return render_template('add_profesor.html')
+
+
 
 @app.route('/profesores')
 def profesores():
@@ -287,7 +296,7 @@ def delete_profesor(id):
     try:
         conn.execute('DELETE FROM Profesor WHERE id_profesor = ?', (id,))
         conn.commit()
-        flash('Profesor eliminado correctamente.', 'success')
+   
         return redirect(url_for('profesores'))
     except Exception as e:
         return handle_error(f'Error al eliminar profesor: {str(e)}')
@@ -455,7 +464,8 @@ def matricula():
             existing_matricula = cursor.fetchone()
 
             if existing_matricula:
-                return 'Este estudiante ya está matriculado en este curso.'
+                flash('Este estudiante ya está matriculado en este curso.', 'error')
+                return redirect(url_for('matricula'))
 
             # Obtener el ID del estudiante usando el DNI
             cursor = conn.execute('SELECT id_estudiante FROM Estudiante WHERE dni_estudiante = ?', (dni_estudiante,))
@@ -469,11 +479,14 @@ def matricula():
                     VALUES (?, ?, ?)
                 ''', (id_estudiante, id_curso, fecha_matricula))
                 conn.commit()
-                return redirect(url_for('ver_matriculas'))
+                flash('Matrícula realizada con éxito!', 'success')
+                return redirect(url_for('matricula'))
             else:
-                return 'No se encontró ningún estudiante con el DNI proporcionado.'
+                flash('No se encontró ningún estudiante con el DNI proporcionado.', 'error')
+                return redirect(url_for('matricula'))
         except Exception as e:
-            return f'Error al registrar matrícula: {str(e)}'
+            flash(f'Error al registrar matrícula: {str(e)}', 'error')
+            return redirect(url_for('matricula'))
         finally:
             conn.close()
     else:
@@ -495,8 +508,7 @@ def get_student_name_by_dni(dni):
     else:
         return jsonify({'nombre_completo': None})
 
-     
-@app.route('/matricula')
+@app.route('/matriculas')
 def matriculas():
     conn = get_db()
     cursor = conn.execute('''
@@ -507,7 +519,7 @@ def matriculas():
     ''')
     matriculas = cursor.fetchall()
     conn.close()
-    return render_template('matricula.html', matriculas=matriculas)
+    return render_template('matriculas.html', matriculas=matriculas)
 
 
 #Asignar notas
@@ -519,15 +531,26 @@ def asignar_nota():
             id_curso = request.form['id_curso']
             nota = request.form['nota']
 
+            # Verificar si ya existe una nota para este estudiante y curso
+            conn = get_db()
+            cursor = conn.execute('''
+                SELECT id_nota_final
+                FROM NotaFinal
+                WHERE id_estudiante = ? AND id_curso = ?
+            ''', (id_estudiante, id_curso))
+            nota_existente = cursor.fetchone()
+
+            if nota_existente:
+                flash('Este estudiante ya tiene una nota asignada para este curso', 'error')
             conn = get_db()
             conn.execute('''
-                INSERT INTO Notas (id_estudiante, id_curso, nota)
+                INSERT INTO NotaFinal (id_estudiante, id_matricula, nota_final)
                 VALUES (?, ?, ?)
             ''', (id_estudiante, id_curso, nota))
             conn.commit()
             conn.close()
-
-            return redirect(url_for('ver_notas'))
+            flash('Nota agregada correctamente', 'success')
+            return redirect(url_for('asignar_nota'))
         except Exception as e:
             return f'Error al asignar nota: {str(e)}'
     else:
@@ -566,6 +589,22 @@ def get_students(course_id):
     students = cursor.fetchall()
     conn.close()
     return jsonify([dict(row) for row in students])
+
+@app.route('/get_dni_by_estudiante/<int:estudianteId>', methods=['GET'])
+def get_dni_by_estudiante(estudianteId):
+    conn = get_db()
+    cursor = conn.execute('''
+        SELECT dni_estudiante
+        FROM Estudiante
+        WHERE id_estudiante = ?
+    ''', (estudianteId,))
+    estudiante = cursor.fetchone()
+    conn.close()
+    
+    if estudiante:
+        return jsonify({'dni_estudiante': estudiante['dni_estudiante']})
+    else:
+        return jsonify({'dni_estudiante': None})
 
 
 if __name__ == '__main__':
