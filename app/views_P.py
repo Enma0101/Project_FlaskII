@@ -183,6 +183,8 @@ def add_profesor():
             telefono = request.form['telefono']
             email = request.form['email']
             genero = request.form['genero']
+            #sssss
+            
 
             # Validación simple de campos
             errores = []
