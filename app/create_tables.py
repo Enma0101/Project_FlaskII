@@ -69,7 +69,6 @@ CREATE TABLE IF NOT EXISTS NotaFinal (
 ''')
 print("Tabla NotaFinal creada")
 
-#webon
 
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS Categoria (
