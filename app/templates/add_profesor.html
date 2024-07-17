@@ -3,41 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agregar Profesor</title>
+    <title>Registro de Profesor</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-
     <style>
-        .form-group label {
-            display: flex;
-            align-items: center;
-        }
-        .form-group label i {
-            margin-right: 5px;
-        }
-        body {
-            font-family: 'Roboto Condensed', sans-serif;
-            background-color: #1a472a;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            }
+    body {
+    font-family: 'Roboto Condensed', sans-serif;
+    background-color: #1a472a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
 
     </style>
+
+
+
 </head>
 <body>
     <div class="container">
         <h2>Registro de Profesor</h2>
-        <!-- Agrega la clase corner-logo al div que contiene la imagen -->
         <div class="corner-logo">
             <img src="{{ url_for('static', filename='imagen_Slytherin.png') }}" alt="Símbolo de Slytherin">
         </div>
 
+        <!-- Mostrar errores -->
+        {% if errores %}
+        <div class="alert alert-danger">
+            <ul>
+                {% for error in errores %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
         <form action="{{ url_for('add_profesor') }}" method="post">
             <div class="form-group">
-                <label for="nombre"><i class="fas fa-user"></i>(Nombre completo)</label>
+                <label for="nombre"><i class="fas fa-user"></i> Nombre completo</label>
                 <div class="name-fields">
                     <input type="text" id="nombre" name="nombre" placeholder="Nombre" required>
                     <input type="text" id="apellido" name="apellido" placeholder="Apellido" required>
@@ -46,23 +51,22 @@
             
             <div class="form-group">
                 <label for="dni"><i class="far fa-id-card"></i> DNI</label>
-                <input type="text" id="dni" name="dni" placeholder="Numero de identificación" required>
+                <input type="text" id="dni" name="dni" placeholder="Número de identificación" required>
             </div>
 
             <div class="form-group">
                 <label for="direccion"><i class="fas fa-map-marker-alt"></i> Dirección</label>
-                <input type="text" id="direccion" name="direccion" placeholder="Dirección"  required>
+                <input type="text" id="direccion" name="direccion" placeholder="Dirección" required>
             </div>
-
 
             <div class="form-group">
                 <label for="telefono"><i class="fas fa-phone"></i> Teléfono</label>
-                <input type="text" id="telefono" name="telefono"  placeholder="Número de teléfono" required>
+                <input type="text" id="telefono" name="telefono" placeholder="Número de teléfono" required>
             </div>
 
             <div class="form-group">
                 <label for="email"><i class="fas fa-envelope"></i> Email</label>
-                <input type="email" id="email" name="email"  placeholder="Dirección de correo electrónico"  required>
+                <input type="email" id="email" name="email" placeholder="Dirección de correo electrónico" required>
             </div>
 
             <div class="form-group">
@@ -70,7 +74,6 @@
                 <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" placeholder="DD/MM/YYYY" required>
             </div>
 
-           
             <div class="form-group">
                 <label for="genero"><i class="fas fa-venus-mars"></i> Género</label>
                 <select id="genero" name="genero" required>

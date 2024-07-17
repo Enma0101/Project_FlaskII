@@ -93,19 +93,17 @@
 <body>
     <h1>Editar Profesor</h1>
     <form method="POST" action="{{ url_for('edit_profesor', id=profesor.id_profesor) }}">
-  
-            <label for="dni"><i class="far fa-id-card"></i> DNI:</label>
-            <input type="text" id="dni" name="dni" value="{{ profesor.dni_profesor }}" readonly>
-   
-      
+        
             <label for="nombre"><i class="fas fa-user"></i> Nombre:</label>
             <input type="text" id="nombre" name="nombre" value="{{ profesor.nombre }}" required>
-    
-   
+
+
             <label for="apellido"><i class="fas fa-user"></i> Apellido:</label>
             <input type="text" id="apellido" name="apellido" value="{{ profesor.apellido }}" required>
-     
-     
+
+            <label for="dni"><i class="far fa-id-card"></i> DNI:</label>
+            <input type="text" id="dni" name="dni" value="{{ profesor.dni_profesor }}" readonly>
+
             <label for="fecha_nacimiento"><i class="fas fa-calendar-alt"></i> Fecha de Nacimiento:</label>
             <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" value="{{ profesor.fecha_nacimiento }}">
       

@@ -103,7 +103,7 @@ select option {
 
 .form-group select {
     width: 100%;
-    padding: 15px;
+    padding: aut;
     margin: 0 auto;
     border: 2px solid #ccc;
     margin-top: 10px;
@@ -131,8 +131,8 @@ select option {
     background-color: #949494; /* Cambia el color de fondo del contenedor */
     background-color: rgba(51, 51, 51, 0.8);
     border-radius: 50px;
-    padding: 50px;
-    width: 555px;
+    padding: 30px 60px;
+   
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
     color: #fff;
     text-align: center;

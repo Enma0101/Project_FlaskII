@@ -15,6 +15,11 @@
         .form-group label i {
             margin-right: 5px;
         }
+        .error-message {
+            color: red;
+            font-size: 0.8rem;
+            margin-top: 0.2rem;
+        }
     </style>
 </head>
 <body>
@@ -24,53 +29,94 @@
         <div class="corner-logo">
             <img src="{{ url_for('static', filename='imagen_gryffindor.png') }}" alt="Símbolo de Gryffindor">
         </div>
-   
         
+        <!-- Mostrar mensajes de éxito o error -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <!-- Formulario de registro de estudiante -->
         <form action="/add_estudiante" method="POST">
+            <!-- Campo Nombre y Apellido -->
             <div class="form-group">
-                <label for="nombre"><i class="fas fa-user"></i>(Nombre completo)</label>
+                <label for="nombre"><i class="fas fa-user"></i> Nombre completo</label>
                 <div class="name-fields">
                     <input type="text" id="nombre" name="nombre" placeholder="Nombre" required>
                     <input type="text" id="apellido" name="apellido" placeholder="Apellido" required>
                 </div>
             </div>
             
+            <!-- Campo DNI -->
             <div class="form-group">
-                <label for="dni_estudiante"><i class="far fa-id-card"></i>Dni</label>
-                <input type="text" id="dni_estudiante" name="dni_estudiante" placeholder="Numero de identificación" required>
+                <label for="dni_estudiante"><i class="far fa-id-card"></i> DNI</label>
+                <input type="text" id="dni_estudiante" name="dni_estudiante" placeholder="Número de identificación" required>
+                {% if errores and 'El DNI es obligatorio.' in errores %}
+                    <p class="error-message">El DNI es obligatorio.</p>
+                {% endif %}
             </div>
 
+            <!-- Campo Dirección -->
             <div class="form-group">
-                <label for="direccion"><i class="fas fa-map-marker-alt"></i>Dirección</label>
+                <label for="direccion"><i class="fas fa-map-marker-alt"></i> Dirección</label>
                 <input type="text" id="direccion" name="direccion" placeholder="Dirección" required>
+                {% if errores and 'La dirección es obligatoria.' in errores %}
+                    <p class="error-message">La dirección es obligatoria.</p>
+                {% endif %}
             </div>
 
+            <!-- Campo Teléfono -->
             <div class="form-group">
-                <label for="telefono"><i class="fas fa-phone"></i> Phone</label>
+                <label for="telefono"><i class="fas fa-phone"></i> Teléfono</label>
                 <input type="text" id="telefono" name="telefono" placeholder="Número de teléfono" required>
+                {% if errores and 'El teléfono es obligatorio.' in errores %}
+                    <p class="error-message">El teléfono es obligatorio.</p>
+                {% endif %}
             </div>
             
+            <!-- Campo Email -->
             <div class="form-group">
                 <label for="email"><i class="fas fa-envelope"></i> Email</label>
                 <input type="email" id="email" name="email" placeholder="Dirección de correo electrónico" required>
+                {% if errores and 'El email es obligatorio.' in errores %}
+                    <p class="error-message">El email es obligatorio.</p>
+                {% endif %}
+                {% if error_email %}
+                    <p class="error-message">{{ error_email }}</p>
+                {% endif %}
             </div>
             
+            <!-- Campo Fecha de Nacimiento -->
             <div class="form-group">
-                <label for="fecha_nacimiento"><i class="fas fa-calendar-alt"></i> Fecha De Nacimiento</label>
+                <label for="fecha_nacimiento"><i class="fas fa-calendar-alt"></i> Fecha de Nacimiento</label>
                 <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" placeholder="DD/MM/YYYY" required>
+                {% if errores and 'La fecha de nacimiento es obligatoria.' in errores %}
+                    <p class="error-message">La fecha de nacimiento es obligatoria.</p>
+                {% endif %}
             </div>
 
+            <!-- Campo Género -->
             <div class="form-group">
-                <label for="genero"><i class="fas fa-venus-mars"></i>Género</label>
+                <label for="genero"><i class="fas fa-venus-mars"></i> Género</label>
                 <select id="genero" name="genero" required>
                     <option value="">Por favor seleccione</option>
                     <option value="M">Masculino</option>
                     <option value="F">Femenino</option>
                 </select>
+                {% if errores and 'El género es obligatorio.' in errores %}
+                    <p class="error-message">El género es obligatorio.</p>
+                {% endif %}
             </div>
             
+            <!-- Botón de enviar -->
             <button type="submit">Agregar</button>
         </form>
     </div>
 </body>
 </html>
+
