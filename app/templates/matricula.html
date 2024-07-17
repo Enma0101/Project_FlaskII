@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Matrícula</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='matricula.css') }}">
+</head>
+<body>
+    <h1>Registrar Matrícula</h1>
+    <form method="POST">
+        <label for="dni_estudiante">DNI Estudiante:</label>
+        <input type="text" id="dni_estudiante" name="dni_estudiante" required autofocus>
+
+        <label for="nombre_estudiante">Nombre Estudiante:</label>
+        <input type="text" id="nombre_estudiante" name="nombre_estudiante" readonly>
+
+        <label for="id_categoria">Categoría:</label>
+        <select id="id_categoria" name="id_categoria" required>
+            <option value="" disabled selected>Seleccione una categoría</option>
+            {% for categoria in categorias %}
+                <option value="{{ categoria.id_categoria }}">{{ categoria.nombre_categoria }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="id_curso">Curso:</label>
+        <select id="id_curso" name="id_curso" required>
+            <option value="" disabled selected>Seleccione un curso</option>
+            {% for curso in cursos %}
+                <option value="{{ curso.id_curso }}">{{ curso.nombre_curso }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="fecha_matricula">Fecha de Matrícula:</label>
+        <input type="date" id="fecha_matricula" name="fecha_matricula" required>
+
+        <button type="submit" class="btn">Registrar Matrícula</button>
+    </form>
+
+    <script>
+        // JavaScript para actualizar el nombre del estudiante cuando se ingresa el DNI
+        document.getElementById('dni_estudiante').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter' || event.key === 'Tab') {
+                var dniEstudiante = this.value.trim();
+                fetch(`/get_student_name_by_dni/${dniEstudiante}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.nombre_completo) {
+                            document.getElementById('nombre_estudiante').value = data.nombre_completo;
+                        } else {
+                            document.getElementById('nombre_estudiante').value = 'Estudiante no encontrado';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            }
+        });
+    
+        // Actualizar el nombre del estudiante cuando se mueve el mouse del campo de DNI
+        document.getElementById('dni_estudiante').addEventListener('mouseleave', function() {
+            var dniEstudiante = this.value.trim();
+            if (dniEstudiante) {
+                fetch(`/get_student_name_by_dni/${dniEstudiante}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.nombre_completo) {
+                            document.getElementById('nombre_estudiante').value = data.nombre_completo;
+                        } else {
+                            document.getElementById('nombre_estudiante').value = 'Estudiante no encontrado';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            }
+        });
+    </script>
+</body>
+</html>
