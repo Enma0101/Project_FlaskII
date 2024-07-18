@@ -69,7 +69,6 @@ CREATE TABLE IF NOT EXISTS NotaFinal (
 ''')
 print("Tabla NotaFinal creada")
 
-
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS Categoria (
     id_categoria INTEGER PRIMARY KEY AUTOINCREMENT,

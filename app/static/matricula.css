@@ -33,7 +33,8 @@ label {
 input[type="text"],
 input[type="date"],
 select {
-    width: 100%;
+    display: flex;
+    width: calc(100% - 10px);
     padding: 10px;
     margin-bottom: 20px;
     border: 3px solid #444;
@@ -41,6 +42,7 @@ select {
     background-color: #333;
     color: #fff;
     font-family: 'Roboto Condensed', sans-serif;
+    box-sizing: border-box;
 }
 
 .btn {
@@ -74,7 +76,7 @@ select {
     font-size: 16px; 
     font-family: 'Roboto Condensed', sans-serif;
     text-decoration: none;
-    margin-left: 400px; /* Margen izquierdo para separar los botones */
+    margin-left: 250px;
 }
 
 .button-back:hover {
