@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
+        /* Estilos globales */
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
 
         body {
@@ -26,6 +27,7 @@
             margin-bottom: 20px;
         }
 
+        /* Estilos específicos para el formulario */
         form {
             background-color: rgba(51, 51, 51, 0.8); /* Fondo semi-transparente */
             padding: 30px;
@@ -33,6 +35,7 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Sombra */
             width: 100%;
             max-width: 550px;
+            margin-top: 20px; /* Espacio superior */
         }
 
         label {
@@ -88,45 +91,108 @@
         .btn-secondary:hover {
             background-color: #555;
         }
+
+        /* Estilos para las alertas de error */
+        .alert {
+            background-color: #f44336; /* Rojo */
+            color: white;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            width: 95%;
+            max-width: 550px;
+            text-align: left;
+        }
+
+        .alert ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .alert li {
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
+    {% if errores %}
+        <div class="alert">
+            <ul>
+                {% for error in errores %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
     <h1>Editar Profesor</h1>
-    <form method="POST" action="{{ url_for('edit_profesor', id=profesor.id_profesor) }}">
-        
-            <label for="nombre"><i class="fas fa-user"></i> Nombre:</label>
-            <input type="text" id="nombre" name="nombre" value="{{ profesor.nombre }}" required>
+    <form id="editProfesorForm" method="POST" action="{{ url_for('edit_profesor', id=profesor.id_profesor) }}" onsubmit="return validarFormulario()">
+        <label for="nombre"><i class="fas fa-user"></i> Nombre:</label>
+        <input type="text" id="nombre" name="nombre" value="{{ profesor.nombre }}" required>
 
+        <label for="apellido"><i class="fas fa-user"></i> Apellido:</label>
+        <input type="text" id="apellido" name="apellido" value="{{ profesor.apellido }}" required>
 
-            <label for="apellido"><i class="fas fa-user"></i> Apellido:</label>
-            <input type="text" id="apellido" name="apellido" value="{{ profesor.apellido }}" required>
+        <label for="dni"><i class="far fa-id-card"></i> DNI:</label>
+        <input type="text" id="dni" name="dni" value="{{ profesor.dni_profesor }}" readonly>
 
-            <label for="dni"><i class="far fa-id-card"></i> DNI:</label>
-            <input type="text" id="dni" name="dni" value="{{ profesor.dni_profesor }}" readonly>
+        <label for="fecha_nacimiento"><i class="fas fa-calendar-alt"></i> Fecha de Nacimiento:</label>
+        <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" value="{{ profesor.fecha_nacimiento }}">
 
-            <label for="fecha_nacimiento"><i class="fas fa-calendar-alt"></i> Fecha de Nacimiento:</label>
-            <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" value="{{ profesor.fecha_nacimiento }}">
-      
-    
-            <label for="direccion"><i class="fas fa-map-marker-alt"></i> Dirección:</label>
-            <input type="text" id="direccion" name="direccion" value="{{ profesor.direccion }} " required>
-   
-            <label for="telefono"><i class="fas fa-phone"></i> Teléfono:</label>
-            <input type="tel" id="telefono" name="telefono" value="{{ profesor.telefono }}" required>
-     
-      
-            <label for="email"><i class="fas fa-envelope"></i> Email:</label>
-            <input type="email" id="email" name="email" value="{{ profesor.email }}" required>
-    
-    
-            <label for="genero"><i class="fas fa-venus-mars"></i> Género:</label>
-            <select id="genero" name="genero" required>
-                <option value="M" {% if profesor.genero == 'M' %} selected {% endif %}>Masculino</option>
-                <option value="F" {% if profesor.genero == 'F' %} selected {% endif %}>Femenino</option>
-            </select>
+        <label for="direccion"><i class="fas fa-map-marker-alt"></i> Dirección:</label>
+        <input type="text" id="direccion" name="direccion" value="{{ profesor.direccion }}" required>
+
+        <label for="telefono"><i class="fas fa-phone"></i> Teléfono:</label>
+        <input type="tel" id="telefono" name="telefono" value="{{ profesor.telefono }}" required>
+
+        <label for="email"><i class="fas fa-envelope"></i> Email:</label>
+        <input type="email" id="email" name="email" value="{{ profesor.email }}" required>
+
+        <label for="genero"><i class="fas fa-venus-mars"></i> Género:</label>
+        <select id="genero" name="genero" required>
+            <option value="M" {% if profesor.genero == 'M' %} selected {% endif %}>Masculino</option>
+            <option value="F" {% if profesor.genero == 'F' %} selected {% endif %}>Femenino</option>
+        </select>
         
         <button type="submit" class="btn">Guardar Cambios</button>
         <a href="{{ url_for('profesores') }}" class="btn btn-secondary">Cancelar</a>
     </form>
+
+    <script>
+        document.getElementById('editProfesorForm').addEventListener('submit', function(event) {
+            var fechaNacimiento = document.getElementById('fecha_nacimiento').value;
+            var fechaActual = new Date().toISOString().split('T')[0];
+    
+            if (fechaNacimiento > fechaActual) {
+                event.preventDefault();
+                alert('La fecha de nacimiento no puede ser una fecha futura.');
+                return;
+            }
+    
+            var email = document.getElementById('email').value;
+            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+            if (!emailRegex.test(email)) {
+                event.preventDefault();
+                alert('Por favor, introduce un correo electrónico válido.');
+                return;
+            }
+    
+            var telefono = document.getElementById('telefono').value;
+            var telefonoPattern = /^\d{10}$/;
+    
+            if (!telefonoPattern.test(telefono)) {
+                event.preventDefault();
+                alert('Ingrese un número de teléfono válido (10 dígitos numéricos)');
+                return;
+            }
+    
+            // Otra validación personalizada si es necesario
+    
+            // Si pasa todas las validaciones, permite enviar el formulario
+            return true;
+        });
+    </script>
+    
 </body>
 </html>

@@ -6,19 +6,60 @@
     <title>Registro de Estudiante</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-
     <style>
+        @media only screen and (max-width: 600px) {
+            /* Ajustar estilos para pantallas pequeñas */
+        }
+
+        /* Estilos para tabletas y dispositivos similares */
+        @media only screen and (min-width: 601px) and (max-width: 1024px) {
+            /* Ajustar estilos para tabletas */
+        }
+
+        /* Estilos para pantallas más grandes (escritorio) */
+        @media only screen and (min-width: 1025px) {
+            /* Ajustar estilos para pantallas grandes */
+        }
+
         .form-group label {
             display: flex;
             align-items: center;
         }
+
         .form-group label i {
             margin-right: 5px;
         }
+
         .error-message {
             color: red;
             font-size: 0.8rem;
             margin-top: 0.2rem;
+        }
+
+        /* Estilo para los botones */
+        .button-group {
+            display: flex;
+            justify-content: flex-end; /* Alineación a la derecha */
+            gap: 10px; /* Espacio entre los botones */
+            margin-top: 1rem;
+        }
+
+        .button-group button, .button-group a {
+            background-color: #e8bb05; /* Cambia el color de fondo del botón */
+            color: #333; /* Cambia el color del texto del botón */
+            border: none;
+            padding: 10px 20px; /* Ajusta el padding según sea necesario */
+            border-radius: 100px;
+            cursor: pointer;
+            transition: background-color 0.5s;
+            font-size: 20px; /* Aumenta el tamaño de la fuente del botón */
+            font-family: 'Roboto Condensed', sans-serif;
+            text-decoration: none; /* Elimina el subrayado del enlace */
+            display: inline-block; /* Asegura que el enlace se comporte como un botón */
+        }
+
+        .button-group button:hover, .button-group a:hover {
+            background-color: #d1a104; /* Cambia el color al pasar el ratón */
         }
     </style>
 </head>
@@ -42,12 +83,12 @@
         {% endwith %}
         
         <!-- Formulario de registro de estudiante -->
-        <form action="/add_estudiante" method="POST">
+        <form id="studentForm" action="/add_estudiante" method="POST">
             <!-- Campo Nombre y Apellido -->
             <div class="form-group">
                 <label for="nombre"><i class="fas fa-user"></i> Nombre completo</label>
                 <div class="name-fields">
-                    <input type="text" id="nombre" name="nombre" placeholder="Nombre" required>
+                    <input type="text" id="nombre" name="nombre" placeholder="Nombre" required autofocus>
                     <input type="text" id="apellido" name="apellido" placeholder="Apellido" required>
                 </div>
             </div>
@@ -94,7 +135,7 @@
             <!-- Campo Fecha de Nacimiento -->
             <div class="form-group">
                 <label for="fecha_nacimiento"><i class="fas fa-calendar-alt"></i> Fecha de Nacimiento</label>
-                <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" placeholder="DD/MM/YYYY" required>
+                <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required>
                 {% if errores and 'La fecha de nacimiento es obligatoria.' in errores %}
                     <p class="error-message">La fecha de nacimiento es obligatoria.</p>
                 {% endif %}
@@ -113,10 +154,44 @@
                 {% endif %}
             </div>
             
-            <!-- Botón de enviar -->
-            <button type="submit">Agregar</button>
+            <!-- Botones -->
+            <div class="button-group">
+                <button type="submit">Agregar</button>
+                <a href="{{ url_for('index') }}">Volver atrás</a>
+            </div>
         </form>
     </div>
+
+    <script>
+        document.getElementById('studentForm').addEventListener('submit', function(event) {
+            var fechaNacimiento = document.getElementById('fecha_nacimiento').value;
+            var fechaActual = new Date().toISOString().split('T')[0];
+
+            if (fechaNacimiento > fechaActual) {
+                event.preventDefault();
+                alert('La fecha de nacimiento no puede ser una fecha futura.');
+            }
+
+            var email = document.getElementById('email').value;
+            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!emailRegex.test(email)) {
+                event.preventDefault();
+                alert('Por favor, introduce un correo electrónico válido.');
+                
+            }
+            var telefono = document.getElementById('telefono').value;
+            var telefonoPattern = /^\d{10}$/;
+
+            if (!telefonoPattern.test(telefono)) {
+             event.preventDefault();
+             alert('Ingrese un número de teléfono válido (10 dígitos numéricos)');
+                return;
+            }
+
+
+
+        });
+    </script>
 </body>
 </html>
-

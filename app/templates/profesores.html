@@ -111,6 +111,7 @@
             border-radius: 55px;
             border: 2px solid #d6d1d1;
             background-color: rgba(51, 51, 51, 0.8);
+            color: #fff;
         }
 
         .search-button {
@@ -125,11 +126,64 @@
 
         .search-button:hover {
             background-color: #d4a105;
+
+
         }
+        .alert {
+            padding: 15px;
+            background-color: #dbdada;
+            color: rgb(10, 10, 10);
+            margin-bottom: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            input[type="text"],
+            input[type="date"],
+            select {
+                width: 100%;
+            }
+        }
+
+        .not-found-message {
+            color: #ff6666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+
+
+
+
+
     </style>
 </head>
 <body>
+
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="flash-message flash-success">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+
+
     <h1>Lista de Profesores</h1>
+    
+    <!-- Mensajes Flash -->
+   
+
 
     <!-- Barra de búsqueda -->
     <div class="search-bar">
@@ -166,7 +220,7 @@
                 <form method="POST" action="{{ url_for('delete_profesor', id=profesor.id_profesor) }}" style="display: inline;">
                     <button type="submit" class="button" onclick="return confirm('¿Estás seguro de eliminar este profesor?')">Eliminar</button>
                 </form>
-                <a href="{{ url_for('profesor_cursos', id=profesor.id_profesor) }}" class="button">Ver Cursos Asignados</a>
+                <a href="{{ url_for('profesor_cursos_asignados', id=profesor.id_profesor) }}" class="button">Ver Cursos Asignados</a>
             </td>
         </tr>
         {% endfor %}

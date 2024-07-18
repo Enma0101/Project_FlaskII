@@ -73,6 +73,7 @@
             font-size: 16px;
             font-family: 'Roboto Condensed', sans-serif;
             margin-right: 5px;
+            text-decoration: none;
         }
 
         .button:hover {
@@ -87,11 +88,17 @@
         .button.cancel:hover {
             background-color: #555;
         }
+
+        .error-message {
+            color: red;
+            font-size: 0.8rem;
+            margin-top: 0.2rem;
+        }
     </style>
 </head>
 <body>
     <h1>Editar Estudiante</h1>
-    <form action="{{ url_for('edit_estudiante', id=estudiante.id_estudiante) }}" method="post">
+    <form id="editStudentForm" action="{{ url_for('edit_estudiante', id=estudiante.id_estudiante) }}" method="post">
         
         <label for="nombre"><i class="fas fa-user"></i> Nombre:</label>
         <input type="text" id="nombre" name="nombre" value="{{ estudiante.nombre }}" required>
@@ -104,12 +111,14 @@
 
         <label for="fecha_nacimiento"><i class="fas fa-calendar-alt"></i> Fecha de Nacimiento:</label>
         <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" value="{{ estudiante.fecha_nacimiento }}" required>
+        <p id="fechaNacimientoError" class="error-message"></p>
 
         <label for="direccion"><i class="fas fa-map-marker-alt"></i> Dirección:</label>
         <input type="text" id="direccion" name="direccion" value="{{ estudiante.direccion }}" required>
 
         <label for="telefono"><i class="fas fa-phone"></i> Teléfono:</label>
         <input type="tel" id="telefono" name="telefono" value="{{ estudiante.telefono }}" required>
+        <p id="telefonoError" class="error-message"></p>
 
         <label for="email"><i class="fas fa-envelope"></i> Email:</label>
         <input type="email" id="email" name="email" value="{{ estudiante.email }}" required>
@@ -123,5 +132,27 @@
         <button type="submit" class="button">Guardar Cambios</button>
         <a href="{{ url_for('estudiantes') }}" class="button cancel">Cancelar</a>
     </form>
+
+    <script>
+        document.getElementById('editStudentForm').addEventListener('submit', function(event) {
+            var fechaNacimiento = document.getElementById('fecha_nacimiento').value;
+            var fechaActual = new Date().toISOString().split('T')[0];
+
+            if (fechaNacimiento > fechaActual) {
+                event.preventDefault();
+                alert('La fecha de nacimiento no puede ser una fecha futura.');
+                return;
+            }
+    
+
+            var telefono = document.getElementById('telefono').value;
+            var telefonoPattern = /^\d{10}$/;
+
+            if (!telefonoPattern.test(telefono)) {
+                event.preventDefault();
+                alert('Por favor, introduce un número de teléfono válido. Debe contener solo 10 dígitos.');
+            }
+        });
+    </script>
 </body>
 </html>

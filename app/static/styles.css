@@ -59,26 +59,8 @@ body {
 
 
 
-button {
-    background-color: #e8bb05;  /* Cambia el color de fondo del botón */
-    color: #333;  /* Cambia el color del texto del botón */
-    border: none;
-    margin-top: 40px;
-    padding: 10px 40px;  /* Alarga el botón */
-    border-radius: 100px;
-    cursor: pointer;
-    transition: background-color 0.5s;
-    font-size: 20px; /* Aumenta el tamaño de la fuente del botón */
-    font-family: 'Roboto Condensed', sans-serif;
-    margin-left: auto;  /* Posiciona el botón a la derecha */
-    display: block;
-   
-  
-}
 
-button:hover {
-    background-color: #d4a105;
-}
+
 
 /* Estilo para el selector de fecha */
 

@@ -5,51 +5,147 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cursos Asignados al Profesor</title>
     <style>
-        /* Estilos CSS según tus preferencias */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            color: #333;
-            margin: 20px;
-        }
-        h1 {
-            font-size: 2em;
-            margin-bottom: 10px;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            margin-bottom: 10px;
-            padding: 10px;
-            background-color: #fff;
-            box-shadow: 0 0 5px rgba(0,0,0,0.1);
-            border-radius: 5px;
-        }
-        .button-back {
-            display: inline-block;
+            font-family: 'Roboto Condensed', sans-serif;
             background-color: #1a472a;
             color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+
+        .container {
+            width: 80%;
+            margin-top: 20px;
+            background-color: rgba(51, 51, 51, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #444;
+        }
+
+        th {
+            background-color: #e8bb05;
+            color: #333;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #333;
+        }
+
+        tr:nth-child(odd) {
+            background-color: #444;
+        }
+
+        .btn-back {
+            background-color: #e8bb05;
+            color: #1a1a1a;
             border: none;
             padding: 10px 20px;
-            text-decoration: none;
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s;
+            font-size: 14px;
+            font-family: 'Roboto Condensed', sans-serif;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
         }
-        .button-back:hover {
-            background-color: #135123;
+
+        .btn-back:hover {
+            background-color: #d4a105;
         }
+
+        .btn-delete {
+            background-color: #d4a105;
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 14px;
+            font-family: 'Roboto Condensed', sans-serif;
+        }
+
+        .btn-delete:hover {
+            background-color: #d4a105;
+        }
+        
     </style>
 </head>
 <body>
-    <h1>Cursos Asignados al Profesor</h1>
-    <ul>
-        {% for curso in cursos %}
-        <li>{{ curso.nombre }} - {{ curso.descripcion }}</li>
-        {% endfor %}
-    </ul>
-    <a href="{{ url_for('index') }}" class="button-back">Volver a la Lista</a>
+    <div class="container">
+        <h1>Cursos Asignados al Profesor</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        {% if profesor %}
+            <h2>{{ profesor['nombre'] }} {{ profesor['apellido'] }}</h2>
+            {% if cursos %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID Curso</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for curso in cursos %}
+                        <tr>
+                            <td>{{ curso['id_curso'] }}</td>
+                            <td>{{ curso['nombre_curso'] }}</td>
+                            <td>{{ curso['descripcion'] }}</td>
+                            <td>
+                                <form action="{{ url_for('eliminar_asignacion', id_profesor=id, id_curso=curso['id_curso']) }}" method="post">
+                                    <button type="submit" class="btn-delete">Eliminar Asignación</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <a href="{{ url_for('profesores') }}" class="btn-back">Volver a la lista de Profesores</a>
+            {% else %}
+                <p>No hay cursos asignados a este profesor.</p>
+                <a href="{{ url_for('profesores') }}" class="btn-back">Volver a la lista de Profesores</a>
+            {% endif %}
+        {% else %}
+            <p>No se encontró información del profesor.</p>
+            <a href="{{ url_for('profesores') }}" class="btn-back">Volver a la lista de Profesores</a>
+        {% endif %}
+    </div>
 </body>
 </html>

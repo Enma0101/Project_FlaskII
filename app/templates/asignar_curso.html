@@ -31,6 +31,7 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
             width: 100%;
+            box-sizing: border-box; /* Incluir el padding en el cálculo del tamaño */
         }
 
         .form-group {
@@ -46,7 +47,7 @@
         input[type="text"],
         input[type="date"],
         select {
-            width: calc(100% - 20px); /* Ajuste para el borde */
+            width: 100%;
             padding: 10px;
             border: 3px solid #444;
             border-radius: 50px;
@@ -66,6 +67,24 @@
             transition: background-color 0.3s;
             font-size: 16px;
             font-family: 'Roboto Condensed', sans-serif;
+        }
+
+        .button-back {
+            background-color: #e8bb05;
+            color: #1a1a1a;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px;
+            font-family: 'Roboto Condensed', sans-serif;
+            text-decoration: none;
+            margin-left: auto; /* Alinear a la derecha */
+        }
+
+        .btn-back:hover {
+            background-color: #d4a105;
         }
 
         .btn-submit:hover {
@@ -92,6 +111,12 @@
                 width: 100%;
             }
         }
+
+        .not-found-message {
+            color: #ff6666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -115,6 +140,7 @@
             <div class="form-group">
                 <label for="nombre_profesor">Nombre Profesor:</label>
                 <input type="text" id="nombre_profesor" name="nombre_profesor" readonly>
+                <span class="not-found-message" style="display: none;">Profesor no encontrado.</span>
             </div>
 
             <div class="form-group">
@@ -136,6 +162,7 @@
 
             <input type="hidden" id="id_profesor" name="id_profesor">
             <button type="submit" class="btn-submit">Asignar Curso</button>
+            <a href="{{ url_for('index') }}" class="button-back">Back</a>
         </form>
     </div>
 
@@ -148,11 +175,17 @@
                     if (data.nombre_completo) {
                         $('#nombre_profesor').val(data.nombre_completo);
                         $('#id_profesor').val(data.id_profesor);
+                        $('.not-found-message').hide(); // Ocultar el mensaje si se encuentra el profesor
                     } else {
                         $('#nombre_profesor').val('');
                         $('#id_profesor').val('');
+                        $('.not-found-message').show(); // Mostrar el mensaje si no se encuentra el profesor
                     }
                 });
+            } else {
+                $('#nombre_profesor').val('');
+                $('#id_profesor').val('');
+                $('.not-found-message').hide(); // Ocultar el mensaje si la longitud del DNI es insuficiente
             }
         });
 

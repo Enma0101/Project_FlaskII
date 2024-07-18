@@ -73,7 +73,6 @@
             margin-right: 5px;
             text-decoration: none;
             display: inline-block;
-         
         }
 
         .button:hover {
@@ -103,15 +102,51 @@
         .button-back:hover {
             background-color: #d4a105;
         }
+        .search-input {
+            padding: 8px;
+            font-size: 14px;
+            border-radius: 55px;
+            border: 2px solid #d6d1d1;
+            background-color: rgba(51, 51, 51, 0.8);
+            color: #fff;
+        }
+
+        .search-button {
+            background-color: #e8bb05;
+            color: #f1e6e6;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            
+        }
     </style>
 </head>
 <body>
-   
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+
+
+
+
 
     <h1>Lista de Estudiantes</h1>
 
-    
-    <table>
+    <!-- Barra de búsqueda -->
+    <div class="search-bar">
+        <label for="search" class="search-label">Buscar por DNI:</label>
+        <input type="text" id="search" class="search-input" onkeyup="filterStudents()" placeholder="Ingrese DNI...">
+    </div>
+
+    <table id="students-table">
         <tr>
             <th>ID</th>
             <th>DNI</th>
@@ -145,8 +180,30 @@
         {% endfor %}
     </table>
 
-         <div class="button-container">
-        <a href="{{ url_for('index') }}" class="button button-back">Volver a la página principal</a>
-        </div>
+    <div class="button-container">
+        <a href="{{ url_for('index') }}" class="button button-back">Back</a>
+    </div>
+
+    <script>
+        function filterStudents() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("search");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("students-table");
+            tr = table.getElementsByTagName("tr");
+
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[1];
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+    </script>
 </body>
 </html>
