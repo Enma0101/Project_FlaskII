@@ -679,6 +679,5 @@ def asignar_curso():
     return render_template('asignar_curso.html', categorias=categorias)
 
 
-
 if __name__ == '__main__':
     app.run(debug=True)
