@@ -92,8 +92,8 @@ print("Tabla Certificado creada")
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS CursoProfesor (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    id_curso INTEGER,
-    id_profesor INTEGER,
+    id_curso INTEGER NOT NULL,
+    id_profesor INTEGER NOT NULL,
     FOREIGN KEY(id_curso) REFERENCES Curso(id_curso) ON DELETE CASCADE,
     FOREIGN KEY(id_profesor) REFERENCES Profesor(id_profesor) ON DELETE CASCADE
 )

@@ -3,71 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asignar Curso</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Asignar Curso a Profesor</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto Condensed', sans-serif;
+            background-color: #4F0F19;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+
+        h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px;
+            padding: 30px;
+            background-color: rgba(51, 51, 51, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            width: 100%;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        select {
+            width: calc(100% - 20px); /* Ajuste para el borde */
+            padding: 10px;
+            border: 3px solid #444;
+            border-radius: 50px;
+            background-color: #333;
+            color: #fff;
+            font-family: 'Roboto Condensed', sans-serif;
+            box-sizing: border-box; /* Incluir el borde en el cálculo del tamaño */
+        }
+
+        .btn-submit {
+            background-color: #e8bb05;
+            color: #1a1a1a;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px;
+            font-family: 'Roboto Condensed', sans-serif;
+        }
+
+        .btn-submit:hover {
+            background-color: #d4a105;
+        }
+
+        .alert {
+            padding: 15px;
+            background-color: #dbdada;
+            color: rgb(10, 10, 10);
+            margin-bottom: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            input[type="text"],
+            input[type="date"],
+            select {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Asignar Curso a Profesor</h1>
-    <form method="POST">
-        <label for="dni_profesor">DNI Profesor:</label>
-        <input type="text" id="dni_profesor" name="dni_profesor" required autofocus>
-        <button type="button" id="buscar_profesor">Buscar Profesor</button>
+    <div class="container">
+        <h2>Asignar Curso a Profesor</h2>
 
-        <label for="nombre_profesor">Nombre Profesor:</label>
-        <input type="text" id="nombre_profesor" name="nombre_profesor" readonly>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-        <label for="id_categoria">Categoría:</label>
-        <select id="id_categoria" name="id_categoria" required>
-            <option value="" disabled selected>Seleccione una categoría</option>
-            {% for categoria in categorias %}
-                <option value="{{ categoria.id_categoria }}">{{ categoria.nombre }}</option>
-            {% endfor %}
-        </select>
+        <form id="asignarCursoForm" method="POST" action="{{ url_for('asignar_curso') }}">
+            <div class="form-group">
+                <label for="dni_profesor">DNI Profesor:</label>
+                <input type="text" id="dni_profesor" name="dni_profesor" required>
+            </div>
 
-        <label for="id_curso">Curso:</label>
-        <select id="id_curso" name="id_curso" required>
-            <option value="" disabled selected>Seleccione un curso</option>
-        </select>
+            <div class="form-group">
+                <label for="nombre_profesor">Nombre Profesor:</label>
+                <input type="text" id="nombre_profesor" name="nombre_profesor" readonly>
+            </div>
 
-        <button type="submit" class="btn">Asignar Curso</button>
-    </form>
+            <div class="form-group">
+                <label for="categoria">Categoría:</label>
+                <select id="categoria" name="categoria" required>
+                    <option value="">Seleccione una categoría</option>
+                    {% for categoria in categorias %}
+                        <option value="{{ categoria.id_categoria }}">{{ categoria.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="curso">Curso:</label>
+                <select id="curso" name="id_curso" required>
+                    <option value="">Seleccione un curso</option>
+                </select>
+            </div>
+
+            <input type="hidden" id="id_profesor" name="id_profesor">
+            <button type="submit" class="btn-submit">Asignar Curso</button>
+        </form>
+    </div>
 
     <script>
-        document.getElementById('buscar_profesor').addEventListener('click', function() {
-            var dniProfesor = document.getElementById('dni_profesor').value.trim();
-            fetch(`/get_profesor_by_dni/${dniProfesor}`)
-                .then(response => response.json())
-                .then(data => {
+    $(document).ready(function() {
+        $('#dni_profesor').on('input', function() {
+            var dni = $(this).val();
+            if (dni.length >= 6) {  // Asumiendo que el DNI tiene al menos 6 dígitos
+                $.get('/get_profesor_by_dni/' + dni, function(data) {
                     if (data.nombre_completo) {
-                        document.getElementById('nombre_profesor').value = data.nombre_completo;
-                        document.getElementById('id_profesor').value = data.id_profesor;
+                        $('#nombre_profesor').val(data.nombre_completo);
+                        $('#id_profesor').val(data.id_profesor);
                     } else {
-                        document.getElementById('nombre_profesor').value = 'Profesor no encontrado';
+                        $('#nombre_profesor').val('');
+                        $('#id_profesor').val('');
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
                 });
+            }
         });
 
-        document.getElementById('id_categoria').addEventListener('change', function() {
-            var categoriaId = this.value;
-            fetch(`/get_cursos_by_categoria/${categoriaId}`)
-                .then(response => response.json())
-                .then(data => {
-                    var cursoSelect = document.getElementById('id_curso');
-                    cursoSelect.innerHTML = '<option value="" disabled selected>Seleccione un curso</option>';
-                    data.cursos.forEach(curso => {
-                        var option = document.createElement('option');
-                        option.value = curso.id_curso;
-                        option.textContent = curso.nombre_curso;
-                        cursoSelect.appendChild(option);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
+        $('#categoria').change(function() {
+            var categoriaId = $(this).val();
+            $.get('/get_cursos_by_categoria/' + categoriaId, function(data) {
+                var cursoSelect = $('#curso');
+                cursoSelect.empty();
+                cursoSelect.append('<option value="">Seleccione un curso</option>');
+                $.each(data.cursos, function(i, curso) {
+                    cursoSelect.append($('<option></option>').val(curso.id_curso).text(curso.nombre_curso));
                 });
+            });
         });
+    });
     </script>
 </body>
 </html>
