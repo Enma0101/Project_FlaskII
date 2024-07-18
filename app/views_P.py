@@ -540,49 +540,66 @@ def matriculas():
     return render_template('matriculas.html', matriculas=matriculas)
 
 
-#Asignar notas
+#Asignar nota
 @app.route('/asignar_nota', methods=['GET', 'POST'])
 def asignar_nota():
     if request.method == 'POST':
         try:
-            id_estudiante = request.form['id_estudiante']
+            dni_estudiante = request.form['dni_estudiante']
             id_curso = request.form['id_curso']
             nota = request.form['nota']
 
-            # Verificar si ya existe una nota para este estudiante y curso
+            # Obtener id_matricula del estudiante y curso
             conn = get_db()
             cursor = conn.execute('''
-                SELECT id_nota_final
-                FROM NotaFinal
-                WHERE id_estudiante = ? AND id_curso = ?
-            ''', (id_estudiante, id_curso))
-            nota_existente = cursor.fetchone()
+                SELECT m.id_matricula
+                FROM Matricula m
+                JOIN Estudiante e ON m.id_estudiante = e.id_estudiante
+                JOIN Curso c ON m.id_curso = c.id_curso
+                WHERE e.dni_estudiante = ? AND c.id_curso = ?
+            ''', (dni_estudiante, id_curso))
+            matricula = cursor.fetchone()
 
-            if nota_existente:
-                flash('Este estudiante ya tiene una nota asignada para este curso', 'error')
-            conn = get_db()
-            conn.execute('''
-                INSERT INTO NotaFinal (id_estudiante, id_matricula, nota_final)
-                VALUES (?, ?, ?)
-            ''', (id_estudiante, id_curso, nota))
-            conn.commit()
+            if matricula:
+                id_matricula = matricula['id_matricula']
+
+                # Verificar si ya existe una nota para esta matrícula
+                cursor = conn.execute('''
+                    SELECT id_nota_final
+                    FROM NotaFinal
+                    WHERE id_matricula = ?
+                ''', (id_matricula,))
+                nota_existente = cursor.fetchone()
+
+                if nota_existente:
+                    flash('Este estudiante ya tiene una nota asignada para este curso', 'error')
+                else:
+                    # Insertar la nueva nota
+                    conn.execute('''
+                        INSERT INTO NotaFinal (id_matricula, nota_final)
+                        VALUES (?, ?)
+                    ''', (id_matricula, nota))
+                    conn.commit()
+                    flash('Nota agregada correctamente', 'success')
+            else:
+                flash('No se encontró ninguna matrícula para el estudiante y curso seleccionados', 'error')
+
             conn.close()
-            flash('Nota agregada correctamente', 'success')
             return redirect(url_for('asignar_nota'))
         except Exception as e:
             return f'Error al asignar nota: {str(e)}'
     else:
         conn = get_db()
-        estudiantes = conn.execute('SELECT id_estudiante, nombre, apellido FROM Estudiante').fetchall()
-        categorias = conn.execute('SELECT id_categoria, nombre FROM Categoria').fetchall()
+        estudiantes = conn.execute('SELECT id_estudiante, dni_estudiante, nombre, apellido FROM Estudiante').fetchall()
         cursos = conn.execute('SELECT id_curso, nombre_curso FROM Curso').fetchall()
+        categorias = conn.execute('SELECT id_categoria, nombre FROM Categoria').fetchall()
         conn.close()
         return render_template('asignar_nota.html', estudiantes=estudiantes, cursos=cursos, categorias=categorias)
 
 @app.route('/get_categories', methods=['GET'])
 def get_categories():
     conn = get_db()
-    cursor = conn.execute('SELECT id, nombre FROM Categoria')
+    cursor = conn.execute('SELECT id_categoria, nombre FROM Categoria')
     categories = cursor.fetchall()
     conn.close()
     return jsonify([dict(row) for row in categories])
@@ -590,7 +607,7 @@ def get_categories():
 @app.route('/get_courses/<int:category_id>', methods=['GET'])
 def get_courses(category_id):
     conn = get_db()
-    cursor = conn.execute('SELECT id, nombre FROM Curso WHERE categoria_id = ?', (category_id,))
+    cursor = conn.execute('SELECT id_curso, nombre_curso FROM Curso WHERE id_categoria = ?', (category_id,))
     courses = cursor.fetchall()
     conn.close()
     return jsonify([dict(row) for row in courses])
