@@ -1,4 +1,7 @@
-from flask import Flask, render_template, request, g, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, g, redirect, url_for, flash, jsonify, send_file, g
+from io import BytesIO
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
 import sqlite3
 
 app = Flask(__name__)
@@ -748,6 +751,77 @@ def asignar_curso():
 @app.route('/certificados')
 def certificado():
     return render_template('certificados.html')
+
+
+
+#Reportes Estudiantes --- Profesor
+
+@app.route('/buscar_estudiante', methods=['GET', 'POST'])
+def buscar_estudiante():
+    if request.method == 'POST':
+        dni_estudiante = request.form['dni_estudiante']
+        return redirect(url_for('generar_reporte', dni_estudiante=dni_estudiante))
+    return render_template('buscar_estudiante.html')
+
+@app.route('/generar_reporte/<string:dni_estudiante>', methods=['GET'])
+def generar_reporte(dni_estudiante):
+    conn = get_db()
+    try:
+        # Obtener información del estudiante
+        cursor = conn.execute('''
+            SELECT * FROM Estudiante WHERE dni_estudiante = ?
+        ''', (dni_estudiante,))
+        estudiante = cursor.fetchone()
+
+        if not estudiante:
+            flash('Estudiante no encontrado.', 'error')
+            return redirect(url_for('buscar_estudiante'))
+
+        # Obtener cursos y notas del estudiante
+        cursor = conn.execute('''
+            SELECT c.nombre_curso, nf.nota_final
+            FROM Matricula m
+            JOIN Curso c ON m.id_curso = c.id_curso
+            LEFT JOIN NotaFinal nf ON m.id_matricula = nf.id_matricula
+            WHERE m.id_estudiante = ?
+        ''', (estudiante['id_estudiante'],))
+        cursos = cursor.fetchall()
+
+        # Generar PDF
+        buffer = BytesIO()
+        p = canvas.Canvas(buffer, pagesize=letter)
+        p.setFont("Helvetica", 12)
+
+        # Información del estudiante
+        p.drawString(100, 750, f"Reporte de Estudiante")
+        p.drawString(100, 730, f"Nombre: {estudiante['nombre']} {estudiante['apellido']}")
+        p.drawString(100, 710, f"DNI: {estudiante['dni_estudiante']}")
+        p.drawString(100, 690, f"Email: {estudiante['email']}")
+
+        # Cursos y notas
+        y = 650
+        p.drawString(100, y, "Cursos Inscritos:")
+        y -= 20
+        for curso in cursos:
+            p.drawString(120, y, f"{curso['nombre_curso']}: {curso['nota_final'] if curso['nota_final'] else 'Sin nota'}")
+            y -= 20
+
+        p.showPage()
+        p.save()
+
+        buffer.seek(0)
+        return send_file(buffer, as_attachment=True, download_name=f"reporte_{dni_estudiante}.pdf", mimetype='application/pdf')
+
+    except Exception as e:
+        flash(f'Error al generar reporte: {str(e)}', 'error')
+        return redirect(url_for('buscar_estudiante'))
+    finally:
+        conn.close()
+
+
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

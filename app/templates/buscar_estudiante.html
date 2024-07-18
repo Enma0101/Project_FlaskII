@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscar Estudiante - Wizarding Academy Hub</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
+        body {
+            font-family: 'Roboto Condensed', sans-serif;
+            background-color: #4F0F19; /* Fondo rojo */
+            color: #fff; /* Color de texto blanco */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; /* Centra verticalmente el contenido */
+            min-height: 100vh; /* Mínimo alto de la ventana */
+        }
+
+        h1 {
+            font-size: 36px; /* Tamaño del título */
+            margin: 30px 0 20px; /* Márgenes superior e inferior, 30px arriba y 20px abajo */
+        }
+
+        form {
+            background-color: rgba(51, 51, 51, 0.8);
+            padding: 40px 80px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        label, input {
+            font-size: 18px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        input[type="text"] {
+            width: 95%;
+            padding: 15px;
+            border-radius: 500px;
+            border: 2px solid #B1B1B7;
+            background-color: #202020;
+            color: #666565;
+            margin-top: 10px;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 10px; /* Espacio entre los botones */
+            margin-top: 20px; /* Espacio superior */
+        }
+
+        button, .back-button {
+            background-color: #e8bb05; /* Cambia el color de fondo del botón */
+            color: #333; /* Cambia el color del texto del botón */
+            border: none;
+            padding: 10px 20px; /* Ajusta el padding según sea necesario */
+            border-radius: 100px;
+            cursor: pointer;
+            transition: background-color 0.5s;
+            font-size: 20px; /* Aumenta el tamaño de la fuente del botón */
+            font-family: 'Roboto Condensed', sans-serif;
+            text-decoration: none; /* Elimina el subrayado del enlace */
+            display: inline-block; /* Asegura que el enlace se comporte como un botón */
+        }
+
+        button:hover, .back-button:hover {
+            background-color: #d4a105; /* Fondo del botón al pasar el mouse */
+        }
+
+        .alert {
+            background-color: #b8b8b8; /* Gris claro para alertas */
+            color: rgb(31, 31, 31);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            width: 80%; /* Ajusta el ancho de las alertas */
+            max-width: 600px; /* Asegura que la alerta no sea demasiado ancha */
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Buscar Estudiante</h1>
+
+    <!-- Mostrar mensajes de alerta -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('buscar_estudiante') }}" method="POST">
+        <label for="dni_estudiante">DNI del Estudiante:</label>
+        <input type="text" id="dni_estudiante" name="dni_estudiante" required>
+        <div class="button-container">
+            <button type="submit">Generar Reporte</button>
+            <a href="{{ url_for('index') }}" class="back-button">back</a>
+        </div>
+    </form>
+</body>
+</html>
