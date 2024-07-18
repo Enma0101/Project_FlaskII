@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generar Certificado</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='certificados.css') }}">
+</head>
+<body>
+        <h1>Certificado
+        </h1>
+        <label for="dni_estudiante">DNI Estudiante:</label>
+        <input type="text" id="dni_estudiante" name="dni_estudiante" required autofocus>
+
+        <label for="nombre_estudiante">Nombre Estudiante:</label>
+        <input type="text" id="nombre_estudiante" name="nombre_estudiante" readonly>
+
+        <label for="id_curso">Curso:</label>
+        <select id="id_curso" name="id_curso" required>
+            <option value="" disabled selected>Seleccione un curso</option>
+        </select>
+
+        <div class="button-container">
+            <button type="submit" class="btn">Generar Certificado</button>
+            <a href="{{ url_for('index') }}" class="button button-back">Back</a>
+        </div>
+    </form>
+</body>
+</html>

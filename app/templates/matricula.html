@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrar Matrícula</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='matricula.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <h1>Registrar Matrícula</h1>
@@ -53,44 +54,52 @@
     </form>
 
     <script>
-        // JavaScript para actualizar el nombre del estudiante cuando se ingresa el DNI
-        document.getElementById('dni_estudiante').addEventListener('input', function() {
-        var dniEstudiante = this.value.trim();
-        if (dniEstudiante) {
-            fetch(`/get_student_name_by_dni/${dniEstudiante}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.nombre_completo) {
-                        document.getElementById('nombre_estudiante').value = data.nombre_completo;
-                    } else {
-                        document.getElementById('nombre_estudiante').value = 'Estudiante no encontrado';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        } else {
-            document.getElementById('nombre_estudiante').value = '';
-        }
-    });
-    
-        // Actualizar el nombre del estudiante cuando se mueve el mouse del campo de DNI
-        document.getElementById('dni_estudiante').addEventListener('mouseleave', function() {
-            var dniEstudiante = this.value.trim();
-            if (dniEstudiante) {
-                fetch(`/get_student_name_by_dni/${dniEstudiante}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.nombre_completo) {
-                            document.getElementById('nombre_estudiante').value = data.nombre_completo;
-                        } else {
-                            document.getElementById('nombre_estudiante').value = 'Estudiante no encontrado';
+
+        // JS para cargar cursos según la categoría seleccionada
+        $(document).ready(function() {
+            $('#id_categoria').change(function() {
+                var categoria_id = $(this).val();
+                if (categoria_id != "") {
+                    $.ajax({
+                        url: '/get_courses/' + categoria_id,
+                        type: 'GET',
+                        success: function(response) {
+                            $('#id_curso').empty();
+                            $('#id_curso').append('<option value="" disabled selected>Seleccione un curso</option>');
+                            $.each(response, function(index, curso) {
+                                $('#id_curso').append('<option value="' + curso.id_curso + '">' + curso.nombre_curso + '</option>');
+                            });
+                        },
+                        error: function(error) {
+                            console.log('Error fetching courses:', error);
                         }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
                     });
-            }
+                } else {
+                    $('#id_curso').empty();
+                    $('#id_curso').append('<option value="" disabled selected>Seleccione un curso</option>');
+                }
+            });
+
+            // Actualizar el nombre del estudiante cuando se ingresa el DNI
+            $('#dni_estudiante').on('input', function() {
+                var dniEstudiante = this.value.trim();
+                if (dniEstudiante) {
+                    fetch(`/get_student_name_by_dni/${dniEstudiante}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.nombre_completo) {
+                                $('#nombre_estudiante').val(data.nombre_completo);
+                            } else {
+                                $('#nombre_estudiante').val('Estudiante no encontrado');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                } else {
+                    $('#nombre_estudiante').val('');
+                }
+            });
         });
     </script>
 </body>

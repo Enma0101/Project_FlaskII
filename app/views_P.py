@@ -477,10 +477,6 @@ def delete_categoria(id):
     return redirect(url_for('categorias'))
 
 
-
-
-
-
 @app.route('/add_curso/<int:id_categoria>', methods=['GET', 'POST'])
 def add_curso(id_categoria):
     if request.method == 'POST':
@@ -646,20 +642,25 @@ def asignar_nota():
 @app.route('/get_categories', methods=['GET'])
 def get_categories():
     conn = get_db()
-    cursor = conn.execute('SELECT id, nombre FROM Categoria')
+    cursor = conn.execute('SELECT id_categoria, nombre FROM Categoria')
     categories = cursor.fetchall()
     conn.close()
     return jsonify([dict(row) for row in categories])
 
 @app.route('/get_courses/<int:category_id>', methods=['GET'])
 def get_courses(category_id):
-    conn = get_db()
-    cursor = conn.execute('SELECT id, nombre FROM Curso WHERE categoria_id = ?', (category_id,))
-    courses = cursor.fetchall()
-    conn.close()
-    return jsonify([dict(row) for row in courses])
-
-@app.route('/get_students/<int:course_id>', methods=['GET'])
+    if category_id <= 0:
+        return jsonify([])
+    try:
+        conn = get_db()
+        cursor = conn.execute('SELECT id_curso, nombre_curso FROM Curso WHERE id_categoria = ?', (category_id,))
+        courses = cursor.fetchall()
+        conn.close()
+        return jsonify([dict(row) for row in courses])
+    except Exception as e:
+        print(f"Error fetching courses: {str(e)}")
+        return jsonify({"error": "Error fetching courses"}), 500
+    
 def get_students(course_id):
     conn = get_db()
     cursor = conn.execute('''
@@ -742,6 +743,11 @@ def asignar_curso():
 
     return render_template('asignar_curso.html', categorias=categorias)
 
+
+##Certificado
+@app.route('/certificados')
+def certificado():
+    return render_template('certificados.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

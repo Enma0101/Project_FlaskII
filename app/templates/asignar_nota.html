@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asignar Notas</title>
+    <!-- Incluir jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='notas.css') }}">
 </head>
 <body>
@@ -51,71 +53,62 @@
     </form>
 
     <script>
-            //Categorias
-            document.getElementById('categoria').addEventListener('change', function() {
-                var categoriaId = this.value;
-                console.log(`Fetching courses for category ID: ${categoriaId}`);
-                fetch(`/get_courses/${categoriaId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        var cursoSelect = document.getElementById('id_curso');
-                        cursoSelect.innerHTML = '<option value="" disabled selected>Seleccione un curso</option>';
-                        data.forEach(curso => {
-                            var option = document.createElement('option');
-                            option.value = curso.id_curso;
-                            option.textContent = curso.nombre_curso;
-                            cursoSelect.appendChild(option);
-                        });
-                    })
-                    .catch(error => console.error('Error fetching courses:', error));
+        // Cargar cursos según la categoría seleccionada
+        $(document).ready(function() {
+            $('#categoria').change(function() {
+                var categoria_id = $(this).val();
+                if (categoria_id != "") {
+                    $.ajax({
+                        url: '/get_courses/' + categoria_id,
+                        type: 'GET',
+                        success: function(response) {
+                            $('#id_curso').empty();
+                            $('#id_curso').append('<option value="" disabled selected>Seleccione un curso</option>');
+                            $.each(response, function(index, curso) {
+                                $('#id_curso').append('<option value="' + curso.id_curso + '">' + curso.nombre_curso + '</option>');
+                            });
+                        },
+                        error: function(error) {
+                            console.log('Error fetching courses:', error);
+                        }
+                    });
+                } else {
+                    $('#id_curso').empty();
+                    $('#id_curso').append('<option value="" disabled selected>Seleccione un curso</option>');
+                }
             });
 
-            document.getElementById('id_curso').addEventListener('change', function() {
-                var cursoId = this.value;
-                fetch(`/get_students/${cursoId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        var estudianteSelect = document.getElementById('dni_estudiante');
-                        estudianteSelect.innerHTML = '';
-                        data.forEach(estudiante => {
-                            var option = document.createElement('option');
-                            option.value = estudiante.dni_estudiante;
-                            option.textContent = `${estudiante.nombre} ${estudiante.apellido}`;
-                            estudianteSelect.appendChild(option);
-                        });
-                    })
-                    .catch(error => console.error('Error fetching students:', error));
-            });
-
-            document.getElementById('dni_estudiante').addEventListener('input', function() {
+            // Buscar estudiante por DNI
+            $('#dni_estudiante').on('input', function() {
                 var dniEstudiante = this.value.trim();
                 if (dniEstudiante) {
                     fetch(`/get_student_name_by_dni/${dniEstudiante}`)
                         .then(response => response.json())
                         .then(data => {
                             if (data.nombre_completo) {
-                                document.getElementById('dni_estudiante_display').value = data.nombre_completo;
+                                $('#dni_estudiante_display').val(data.nombre_completo);
                             } else {
-                                document.getElementById('dni_estudiante_display').value = 'Estudiante no encontrado';
+                                $('#dni_estudiante_display').val('Estudiante no encontrado');
                             }
                         })
                         .catch(error => {
                             console.error('Error fetching student name:', error);
                         });
                 } else {
-                    document.getElementById('dni_estudiante_display').value = '';
+                    $('#dni_estudiante_display').val('');
                 }
             });
 
-            document.getElementById('campo-notas').addEventListener('input', function() {
+            // Validar nota
+            $('#campo-notas').on('input', function() {
                 var nota = parseFloat(this.value);
-                if (nota < 0 || nota > 20 || isNaN(nota)) {
+                if (isNaN(nota) || nota < 0 || nota > 20) {
                     this.setCustomValidity('La nota debe estar entre 0 y 20');
                 } else {
                     this.setCustomValidity('');
                 }
             });
+        });
     </script>
 </body>
 </html>
-
