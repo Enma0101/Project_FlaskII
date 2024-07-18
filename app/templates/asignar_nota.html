@@ -38,16 +38,11 @@
             </select>
         </div>
         <div>
-            <label for="estudiante">Estudiante:</label>
-            <select id="estudiante" name="id_estudiante" required>
-                <option value="">Selecciona un estudiante</option>
-                {% for estudiante in estudiantes %}
-                    <option value="{{ estudiante.id_estudiante }}">{{ estudiante.nombre }} {{ estudiante.apellido }}</option>
-                {% endfor %}
-            </select>
+            <label for="dni_estudiante">DNI Estudiante:</label>
+        <input type="text" id="dni_estudiante" name="dni_estudiante" required autofocus>
         </div>
         <div>
-            <label for="dni_estudiante">Cédula del Estudiante:</label>
+            <label for="dni_estudiante">Estudiante:</label>
             <input type="text" id="dni_estudiante" name="dni_estudiante" readonly>
         </div>
         <div>
