@@ -1,12 +1,15 @@
 from flask import Flask, render_template, request, g, redirect, url_for, flash, jsonify, send_file
 from io import BytesIO
-import os
+from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle 
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Image , Spacer
-from reportlab.lib.units import inch
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from PyPDF2 import PdfReader, PdfWriter
+import reportlab.rl_config
+import os
 import sqlite3
+import io
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '123456'
@@ -678,8 +681,16 @@ def asignar_nota():
             ''', (id_matricula,))
             nota_existente = cursor.fetchone()
 
+            #Editar nota
             if nota_existente:
-                flash('Este estudiante ya tiene una nota asignada para este curso', 'error')
+                conn.execute('''
+                    UPDATE NotaFinal
+                    SET nota_final = ?
+                    WHERE id_matricula = ?
+                ''', (nota, id_matricula))
+                conn.commit()
+                flash('Nota actualizada correctamente', 'success')
+                
             else:
                 conn.execute('''
                     INSERT INTO NotaFinal (id_matricula, nota_final)
@@ -698,8 +709,9 @@ def asignar_nota():
         estudiantes = conn.execute('SELECT id_estudiante, dni_estudiante, nombre, apellido FROM Estudiante').fetchall()
         categorias = conn.execute('SELECT id_categoria, nombre FROM Categoria').fetchall()
         cursos = conn.execute('SELECT id_curso, nombre_curso FROM Curso').fetchall()
+        nota_existente = None
         conn.close()
-        return render_template('asignar_nota.html', estudiantes=estudiantes, cursos=cursos, categorias=categorias)
+        return render_template('asignar_nota.html', estudiantes=estudiantes, cursos=cursos, categorias=categorias, nota_existente=nota_existente)
 
 
 @app.route('/get_categories', methods=['GET'])
@@ -807,11 +819,162 @@ def asignar_curso():
     return render_template('asignar_curso.html', categorias=categorias)
 
 
-##Certificado
+#Certificado
+
 @app.route('/certificados')
 def certificado():
     return render_template('certificados.html')
 
+@app.route('/obtener_estudiante')
+def obtener_estudiante():
+    dni_estudiante = request.args.get('dni_estudiante')
+    conn = get_db()
+    cursor = conn.cursor()
+    estudiante = cursor.execute('''
+        SELECT nombre, apellido
+        FROM Estudiante
+        WHERE dni_estudiante = ?
+    ''', (dni_estudiante,)).fetchone()
+    conn.close()
+
+    if estudiante:
+        nombre_completo = f"{estudiante['nombre']} {estudiante['apellido']}"
+        return jsonify({'nombre': nombre_completo})
+    else:
+        return jsonify({'error': 'Estudiante no encontrado'}), 404
+
+@app.route('/obtener_cursos')
+def obtener_cursos():
+    dni_estudiante = request.args.get('dni_estudiante')
+    conn = get_db()
+    cursor = conn.cursor()
+    cursos = cursor.execute('''
+        SELECT Curso.id_curso, Curso.nombre_curso
+        FROM Matricula
+        JOIN Curso ON Matricula.id_curso = Curso.id_curso
+        JOIN Estudiante ON Matricula.id_estudiante = Estudiante.id_estudiante
+        WHERE Estudiante.dni_estudiante = ?
+    ''', (dni_estudiante,)).fetchall()
+    conn.close()
+
+    if cursos:
+        cursos_list = [{'id_curso': curso['id_curso'], 'nombre_curso': curso['nombre_curso']} for curso in cursos]
+        return jsonify(cursos_list)
+    else:
+        return jsonify({'error': 'No se encontraron cursos para este estudiante'}), 404
+
+views_folder = os.path.join(os.getcwd(), 'app', 'static')
+pdf_template_path = os.path.join(views_folder, 'certificado_template.pdf')
+
+@app.route('/generar_certificado', methods=['POST'])
+def generar_certificado():
+    dni_estudiante = request.form['dni_estudiante']
+    id_curso = request.form['id_curso']
+    conn = get_db()
+    cursor = conn.cursor()
+
+    try:
+        estudiante = cursor.execute('''
+            SELECT nombre, apellido
+            FROM Estudiante
+            WHERE dni_estudiante = ?
+        ''', (dni_estudiante,)).fetchone()
+        
+        curso = cursor.execute('''
+            SELECT nombre_curso
+            FROM Curso
+            WHERE id_curso = ?
+        ''', (id_curso,)).fetchone()
+        
+        matricula = cursor.execute('''
+            SELECT fecha_matricula
+            FROM Matricula
+            WHERE id_estudiante = (
+                SELECT id_estudiante
+                FROM Estudiante
+                WHERE dni_estudiante = ?
+            )
+            AND id_curso = ?
+        ''', (dni_estudiante, id_curso)).fetchone()
+        
+        nota_final = cursor.execute('''
+            SELECT nota_final
+            FROM NotaFinal
+            WHERE id_matricula = (
+                SELECT id_matricula
+                FROM Matricula
+                WHERE id_estudiante = (
+                    SELECT id_estudiante
+                    FROM Estudiante
+                    WHERE dni_estudiante = ?
+                )
+                AND id_curso = ?
+            )
+        ''', (dni_estudiante, id_curso)).fetchone()
+        
+        conn.close()
+        
+        if estudiante and curso and matricula and nota_final:
+            nota = nota_final[0]
+            
+            if nota is None:
+                return jsonify({'error': 'No se encontró nota final para el estudiante y curso seleccionados.'}), 400
+
+            if nota < 10:
+                return jsonify({'error': 'La nota final del estudiante es menor a 10. No se puede generar el certificado.'}), 400
+            
+            # Obtener la fecha actual
+            fecha_actual = datetime.now().strftime("%d/%m/%Y")
+            
+            # Registrar fuentes
+            pdfmetrics.registerFont(TTFont('VeraBd', 'VeraBd.ttf')) 
+            pdfmetrics.registerFont(TTFont('Vera', 'Vera.ttf'))     
+            pdfmetrics.registerFont(TTFont('VeraBI', 'VeraBI.ttf'))
+            
+            # Generar el PDF con ReportLab
+            packet = io.BytesIO()
+            c = canvas.Canvas(packet, pagesize=letter)
+            
+            # Configuración de fuente y color
+            c.setFillColorRGB(139/255, 119/255, 40/255)  # Color dorado
+            c.setFont('VeraBd', 40)
+            
+            # Dibujar el texto en el PDF
+            c.drawCentredString(422, 280, f"{estudiante['nombre']} {estudiante['apellido']}")
+            c.drawString(240, 170, curso['nombre_curso'])
+            c.setFont('Vera', 15)
+            c.drawString(520, 105, fecha_actual) 
+            
+            c.setFont('Vera', 8)
+            c.save()
+            
+            # Mover el cursor al inicio del "archivo"
+            packet.seek(0)
+            
+            # Crear un nuevo PDF a partir del template
+            existing_pdf = PdfReader(open(pdf_template_path, "rb"))
+            new_pdf = PdfReader(packet)
+            
+            output = PdfWriter()
+            page = existing_pdf.pages[0]
+            page.merge_page(new_pdf.pages[0])
+            output.add_page(page)
+            
+            # Guardar el PDF generado en la carpeta 'static'
+            output_filename = f"certificado_{estudiante['nombre'].replace(' ', '_')}.pdf"
+            output_path = os.path.join(os.getcwd(), 'app', 'static', 'certificados', output_filename)
+            
+            with open(output_path, "wb") as outputStream:
+                output.write(outputStream)
+            
+            # Enviar el archivo como respuesta
+            return send_file(output_path, as_attachment=True, download_name=output_filename, mimetype='application/pdf')
+        
+        else:
+            return jsonify({'error': 'Estudiante, curso o matrícula no encontrados'}), 400
+
+    except Exception as e:
+        return jsonify({'error': f'Error al generar el certificado: {str(e)}'}), 500
 
 
 #Reportes Estudiantes 

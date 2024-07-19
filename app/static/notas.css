@@ -89,3 +89,12 @@ input[type="number"] {
 .button-back:hover {
     background-color: #e8bb05;
 }
+
+.alert {
+    padding: 15px;
+    background-color: #dbdada; /* Color de fondo rojo */
+    color: rgb(10, 10, 10); /* Color de texto blanco */
+    margin-bottom: 15px; /* Espacio inferior */
+    border-radius: 5px; /* Bordes redondeados */
+    text-align: center; /* Texto centrado */
+}

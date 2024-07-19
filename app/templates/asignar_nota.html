@@ -33,6 +33,9 @@
             <label for="id_curso">Curso:</label>
             <select id="id_curso" name="id_curso" required>
                 <option value="" disabled selected>Seleccione un curso</option>
+                {% for curso in cursos %}
+                    <option value="{{ curso.id_curso }}">{{ curso.nombre_curso }}</option>
+                {% endfor %}
             </select>
         </div>
         <div>
@@ -45,8 +48,12 @@
         </div>
         <div>
             <label for="campo-notas">Nota:</label>
-            <input type="number" id="campo-notas" name="nota" min="0" max="20" required>
-            <button type="submit" class="btn">Agregar nota</button>
+            <input type="number" id="campo-notas" name="nota" min="0" max="20" required value="{{ nota_existente if nota_existente is not none else '' }}">
+            {% if nota_existente is not none %}
+                <button type="submit" class="btn">Actualizar nota</button>
+            {% else %}
+                <button type="submit" class="btn">Agregar nota</button>
+            {% endif %}
             <a href="{{ url_for('index') }}" class="button button-back">Back</a>
         </div>
     </form>
@@ -100,7 +107,8 @@
                 var nota = parseFloat(this.value);
                 if (isNaN(nota) || nota < 0 || nota > 20) {
                     this.setCustomValidity('La nota debe estar entre 0 y 20');
-                } else {
+                } 
+                else {
                     this.setCustomValidity('');
                 }
             });
