@@ -5,11 +5,16 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from PyPDF2 import PdfReader, PdfWriter
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle 
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Image , Spacer
+from reportlab.lib.units import inch
 import reportlab.rl_config
 import os
 import sqlite3
 import io
 from datetime import datetime
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '123456'
