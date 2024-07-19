@@ -942,7 +942,7 @@ def generar_certificado():
             
             # Configuración de fuente y color
             c.setFillColorRGB(139/255, 119/255, 40/255)  # Color dorado
-            c.setFont('VeraBd', 40)
+            c.setFont('VeraBd',30)
             
             # Dibujar el texto en el PDF
             c.drawCentredString(422, 280, f"{estudiante['nombre']} {estudiante['apellido']}")
