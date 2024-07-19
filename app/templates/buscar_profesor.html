@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscar Profesor - Wizarding Academy Hub</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
+        body {
+            font-family: 'Roboto Condensed', sans-serif;
+            background-color: #4F0F19;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-size: 36px;
+            margin: 30px 0 20px;
+        }
+
+        form {
+            background-color: rgba(51, 51, 51, 0.8);
+            padding: 40px 80px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        label, input {
+            font-size: 18px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        input[type="text"] {
+            width: 95%;
+            padding: 15px;
+            border-radius: 500px;
+            border: 2px solid #B1B1B7;
+            background-color: #202020;
+            color: #dfdede;
+            margin-top: 10px;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button, .back-button {
+            background-color: #e8bb05;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: background-color 0.5s;
+            font-size: 20px;
+            font-family: 'Roboto Condensed', sans-serif;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        button:hover, .back-button:hover {
+            background-color: #d4a105;
+        }
+
+        .alert {
+            background-color: #b8b8b8;
+            color: rgb(31, 31, 31);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .not-found-message {
+            color: #ff6666;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Buscar profesor</h1>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('generar_reporte_profesor') }}" method="POST">
+            <label for="dni_profesor">DNI del profesor:</label>
+            <input type="text" id="dni_profesor" name="dni_profesor" required>
+            
+            <label for="nombre_profesor">Nombre del profesor:</label>
+            <input type="text" id="nombre_profesor" name="nombre_profesor" readonly>
+            <span class="not-found-message">Profesor no encontrado.</span>
+
+            <input type="hidden" id="id_profesor" name="id_profesor">
+            
+            <div class="button-container">
+                <button type="submit">Generar Reporte</button>
+                <a href="{{ url_for('index') }}" class="back-button">Back</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+    $(document).ready(function() {
+        $('#dni_profesor').on('input', function() {
+            var dni = $(this).val();
+            if (dni.length >= 6) {
+                $.get('/get_profesor_by_dni/' + dni, function(data) {
+                    if (data.nombre_completo) {
+                        $('#nombre_profesor').val(data.nombre_completo);
+                        $('#id_profesor').val(data.id_profesor);
+                        $('.not-found-message').hide();
+                    } else {
+                        $('#nombre_profesor').val('');
+                        $('#id_profesor').val('');
+                        $('.not-found-message').show();
+                    }
+                }).fail(function() {
+                    $('#nombre_profesor').val('');
+                    $('#id_profesor').val('');
+                    $('.not-found-message').show();
+                });
+            } else {
+                $('#nombre_profesor').val('');
+                $('#id_profesor').val('');
+                $('.not-found-message').hide();
+            }
+        });
+    });
+    </script>
+</body>
+</html>
+

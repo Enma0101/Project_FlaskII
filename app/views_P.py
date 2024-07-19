@@ -1,7 +1,11 @@
-from flask import Flask, render_template, request, g, redirect, url_for, flash, jsonify, send_file, g
+from flask import Flask, render_template, request, g, redirect, url_for, flash, jsonify, send_file
 from io import BytesIO
-from reportlab.pdfgen import canvas
+import os
 from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle 
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Image , Spacer
+from reportlab.lib.units import inch
 import sqlite3
 
 app = Flask(__name__)
@@ -524,6 +528,29 @@ def edit_curso(id_curso):
     
     return render_template('edit_curso.html', curso=curso)
 
+@app.route('/delete_curso/<int:id_curso>', methods=['POST'])
+def delete_curso(id_curso):
+    conn = get_db()
+    try:
+        # Verificar si hay estudiantes inscritos en el curso
+        cursor = conn.execute('SELECT COUNT(*) FROM Matricula WHERE id_curso = ?', (id_curso,))
+        count = cursor.fetchone()[0]
+        
+        if count > 0:
+            # Hay estudiantes inscritos, no se puede eliminar el curso
+            flash('No se puede eliminar el curso porque tiene estudiantes inscritos.', 'error')
+        else:
+            # No hay estudiantes inscritos, proceder con la eliminación
+            conn.execute('DELETE FROM Curso WHERE id_curso = ?', (id_curso,))
+            conn.commit()
+            flash('Curso eliminado correctamente.', 'success')
+    except Exception as e:
+        flash(f'Error al eliminar curso: {str(e)}', 'error')
+    finally:
+        conn.close()
+    
+        return redirect(url_for('cursos', id_categoria=request.form['id_categoria']))
+
 
 # Resto de las rutas y funciones existentes...
 #Matricula
@@ -787,7 +814,7 @@ def certificado():
 
 
 
-#Reportes Estudiantes --- Profesor
+#Reportes Estudiantes 
 @app.route('/buscar_estudiante', methods=['GET', 'POST'])
 def buscar_estudiante():
     if request.method == 'POST':
@@ -819,7 +846,7 @@ def generar_reporte(dni_estudiante):
     try:
         # Obtener información del estudiante
         cursor = conn.execute('''
-            SELECT * FROM Estudiante WHERE dni_estudiante = ?
+            SELECT *, strftime('%Y', 'now') - strftime('%Y', fecha_nacimiento) AS edad FROM Estudiante WHERE dni_estudiante = ?
         ''', (dni_estudiante,))
         estudiante = cursor.fetchone()
 
@@ -839,25 +866,86 @@ def generar_reporte(dni_estudiante):
 
         # Generar PDF
         buffer = BytesIO()
-        p = canvas.Canvas(buffer, pagesize=letter)
-        p.setFont("Helvetica", 12)
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        elements = []
+
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle(
+            'TitleStyle',
+            parent=styles['Heading1'],
+            alignment=1,  # Center alignment
+            textColor=colors.HexColor('#dbdddc'),  # Black text color
+            fontSize=18
+        )
+
+        # Title
+        elements.append(Paragraph("Wizarding Academy Hub", title_style))
+
+        # Spacer
+        elements.append(Spacer(1, 1 * inch))
 
         # Información del estudiante
-        p.drawString(100, 750, f"Reporte de Estudiante")
-        p.drawString(100, 730, f"Nombre: {estudiante['nombre']} {estudiante['apellido']}")
-        p.drawString(100, 710, f"DNI: {estudiante['dni_estudiante']}")
-        p.drawString(100, 690, f"Email: {estudiante['email']}")
+        genero_texto = "Masculino" if estudiante['genero'] == 'M' else "Femenino"
+        data = [
+            ["Información del Estudiante", " "],
+            ["Nombre", f"{estudiante['nombre']} {estudiante['apellido']}"],
+            ["DNI", estudiante['dni_estudiante']],
+            ["Email", estudiante['email']],
+            ["Edad", str(estudiante['edad'])],  # Agregado edad
+            ["Género", genero_texto],
+        ]
 
-        # Cursos y notas
-        y = 650
-        p.drawString(100, y, "Cursos Inscritos:")
-        y -= 20
-        for curso in cursos:
-            p.drawString(120, y, f"{curso['nombre_curso']}: {curso['nota_final'] if curso['nota_final'] else 'Sin nota'}")
-            y -= 20
+        # Tabla de cursos y notas
+        if cursos:
+            course_data = [["Curso", "Nota Final"]]
+            for curso in cursos:
+                course_data.append([curso['nombre_curso'], curso['nota_final'] if curso['nota_final'] else 'Sin nota'])
+        else:
+            course_data = [["Curso", "Nota Final"], ["No hay cursos asignados", ""]]
 
-        p.showPage()
-        p.save()
+        # Crear tablas
+        info_table = Table(data, colWidths=[150, 300])
+        course_table = Table(course_data, colWidths=[225, 225])
+
+        # Estilizar las tablas
+        info_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#d3a625')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#ffffff')),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#444444')),
+            ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor('#f3f6f4')),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 12),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 12),
+            ('GRID', (0, 1), (-1, -1), 1, colors.HexColor('#363434')),
+            ('SPAN', (0, 0), (-1, 0)),  # Fusiona las celdas de la primera fila
+            ('LINEABOVE', (0, 1), (-1, 1), 1, colors.HexColor('#5b5b5b')),  # Añade una línea encima de la segunda fila
+        ]))
+
+        course_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#d3a625')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#ffffff')),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#444444')),
+            ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor('#f3f6f4')),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 12),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 12),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#363434'))
+        ]))
+
+        elements.append(info_table)
+        elements.append(Spacer(1, 0.5 * inch))  # Agregar espacio entre tablas
+        elements.append(course_table)
+
+        # Construir el PDF con la función de layout personalizada
+        doc.build(elements, onFirstPage=lambda canvas, doc: add_page_layout1(canvas, doc ))
 
         buffer.seek(0)
         return send_file(buffer, as_attachment=True, download_name=f"reporte_{dni_estudiante}.pdf", mimetype='application/pdf')
@@ -868,9 +956,182 @@ def generar_reporte(dni_estudiante):
     finally:
         conn.close()
 
+def add_page_layout1(canvas, doc):
+    # Set background color
+    canvas.setFillColorRGB(116/255, 0/255, 1/255)  # Dark green background
+    canvas.rect(0, 0, doc.width + 2 * doc.leftMargin, doc.height + 2 * doc.bottomMargin, stroke=0, fill=1)
+
+    # Set logo path and position
+    logo_path = os.path.join(app.root_path, 'static', 'Imagen_Gryffindor.png')
+    logo = Image(logo_path, width=1.5*inch, height=1.7*inch)
+    
+    # Adjust y-coordinate to move the image down
+    y_position = doc.height + doc.bottomMargin - 1*inch  # Adjust this value to move the image down
+    logo.drawOn(canvas, doc.width + doc.leftMargin - 1*inch, y_position)
 
 
 
+
+     #buscar -- Profesor   
+
+@app.route('/buscar_profesor', methods=['GET', 'POST'])
+def buscar_profesor():
+    if request.method == 'POST':
+        dni_profesor = request.form['dni_profesor']
+        return redirect(url_for('generar_reporte_profesor', dni_profesor=dni_profesor))
+    return render_template('buscar_profesor.html')
+
+@app.route('/get_profesor_por_dni/<string:dni>')
+def get_profesor_por_dni(dni):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT id_profesor, nombre, apellido FROM profesor WHERE dni_profesor = ?', (dni,))
+    profesor = cursor.fetchone()
+    conn.close()
+
+    if profesor:
+        return jsonify({
+            'id_profesor': profesor['id_profesor'],
+            'nombre_completo': f"{profesor['nombre']} {profesor['apellido']}"
+        })
+    else:
+        return jsonify({}), 404
+
+
+@app.route('/generar_reporte_profesor', methods=['POST'])
+def generar_reporte_profesor():
+    dni_profesor = request.form['dni_profesor']
+    conn = get_db()
+    try:
+        # Obtener información del profesor
+        cursor = conn.execute('''
+            SELECT id_profesor, dni_profesor, nombre, apellido, email, 
+                   strftime('%Y', 'now') - strftime('%Y', fecha_nacimiento) AS edad, 
+                   genero 
+            FROM Profesor 
+            WHERE dni_profesor = ?
+        ''', (dni_profesor,))
+        profesor = cursor.fetchone()
+
+        if not profesor:
+            flash('Profesor no encontrado.', 'error')
+            return redirect(url_for('buscar_profesor'))
+
+        # Obtener cursos asignados
+        cursor = conn.execute('''
+            SELECT c.nombre_curso, cat.nombre AS categoria
+            FROM CursoProfesor cp
+            JOIN Curso c ON cp.id_curso = c.id_curso
+            JOIN Categoria cat ON c.id_categoria = cat.id_categoria
+            WHERE cp.id_profesor = ?
+        ''', (profesor['id_profesor'],))
+        cursos = cursor.fetchall()
+
+        # Generar PDF
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        elements = []
+
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle(
+            'TitleStyle',
+            parent=styles['Heading1'],
+            alignment=1,  # Center alignment
+            textColor=colors.HexColor('#dbdddc'),  # Black text color
+            fontSize=18
+        )
+
+        # Title
+        elements.append(Paragraph("Wizarding Academy Hub", title_style))
+
+        # Spacer
+        elements.append(Spacer(1, 1 * inch))
+
+        # Profesor information
+        genero_texto = "Masculino" if profesor['genero'] == 'M' else "Femenino"
+        data = [
+            ["Información del Profesor", ""],
+            ["Nombre ", f"{profesor['nombre']} {profesor['apellido']}"],
+            ["DNI:", profesor['dni_profesor']],
+            ["Email:", profesor['email']],
+            ["Edad:", str(profesor['edad'])],
+            ["Genero:", genero_texto],
+        ]
+
+        # Cursos table
+        if cursos:
+            course_data = [["Cursos Asignados:", ""]]
+            for curso in cursos:
+                course_data.append([curso['categoria'], curso['nombre_curso']])
+        else:
+            course_data = [["Cursos Asignados:", "No tiene cursos asignados"]]
+
+        # Create tables
+        info_table = Table(data, colWidths=[150, 300])
+        course_table = Table(course_data, colWidths=[225, 225])
+
+        # Style the tables
+        info_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a472a')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#ffffff')),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#444444')),
+            ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor('#f3f6f4')),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 12),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 12),
+            ('GRID', (0, 1), (-1, -1), 1, colors.HexColor('#363434')),
+            ('SPAN', (0, 0), (-1, 0)),  # Fusiona las celdas de la primera fila
+            ('LINEABOVE', (0, 1), (-1, 1), 1, colors.HexColor('#5b5b5b')),  # Añade una línea encima de la segunda fila
+        ]))
+
+        course_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a472a')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#ffffff')),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#444444')),
+            ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor('#f3f6f4')),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 12),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 12),
+            ('GRID', (0, 1), (-1, -1), 1, colors.HexColor('#363434')),
+            ('SPAN', (0, 0), (-1, 0)),  # Fusiona las celdas de la primera fila
+            ('LINEABOVE', (0, 1), (-1, 1), 1, colors.HexColor('#5b5b5b')),  # Añade una línea encima de la segunda fila
+        ]))
+        elements.append(info_table)
+        elements.append(Spacer(1, 0.5 * inch))  # Add space between tables
+        elements.append(course_table)
+
+        # Build the PDF
+        doc.build(elements, onFirstPage=add_page_layout)
+
+        buffer.seek(0)
+        return send_file(buffer, as_attachment=True, download_name=f"reporte_{dni_profesor}.pdf", mimetype='application/pdf')
+
+    except Exception as e:
+        flash(f'Error al generar reporte: {str(e)}', 'error')
+        return redirect(url_for('buscar_profesor'))
+    finally:
+        conn.close()
+
+def add_page_layout(canvas, doc):
+    # Set background color
+    canvas.setFillColorRGB(26/255, 71/255, 42/255)  # Dark green background
+    canvas.rect(0, 0, doc.width + 2 * doc.leftMargin, doc.height + 2 * doc.bottomMargin, stroke=0, fill=1)
+
+    # Set logo path and position
+    logo_path = os.path.join(app.root_path, 'static', 'Imagen_Slytherin.png')
+    logo = Image(logo_path, width=1.5*inch, height=1.7*inch)
+    
+    # Adjust y-coordinate to move the image down
+    y_position = doc.height + doc.bottomMargin - 1*inch  # Adjust this value to move the image down
+    logo.drawOn(canvas, doc.width + doc.leftMargin - 1*inch, y_position)
 
 
 
