@@ -78,17 +78,6 @@ CREATE TABLE IF NOT EXISTS Categoria (
 print("Tabla Categoria creada")
 
 cursor.execute('''
-CREATE TABLE IF NOT EXISTS Certificado (
-    id_certificado INTEGER PRIMARY KEY AUTOINCREMENT,
-    fecha_de_emision VARCHAR(10),
-    descripcion TEXT,
-    id_matricula INTEGER,
-    FOREIGN KEY(id_matricula) REFERENCES Matricula(id_matricula) ON DELETE RESTRICT
-)
-''')
-print("Tabla Certificado creada")
-
-cursor.execute('''
 CREATE TABLE IF NOT EXISTS CursoProfesor (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     id_curso INTEGER NOT NULL,

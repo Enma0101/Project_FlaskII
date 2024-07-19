@@ -108,7 +108,7 @@
 
         <form action="{{ url_for('generar_reporte_profesor') }}" method="POST">
             <label for="dni_profesor">DNI del profesor:</label>
-            <input type="text" id="dni_profesor" name="dni_profesor" required>
+            <input type="text" id="dni_profesor" name="dni_profesor" required autofocus>
             
             <label for="nombre_profesor">Nombre del profesor:</label>
             <input type="text" id="nombre_profesor" name="nombre_profesor" readonly>
