@@ -608,39 +608,72 @@ def matriculas():
 def asignar_nota():
     if request.method == 'POST':
         try:
-            id_estudiante = request.form['id_estudiante']
+            conn = get_db()
+            dni_estudiante = request.form['id_estudiante']
             id_curso = request.form['id_curso']
             nota = request.form['nota']
+            
+            # Buscar id_estudiante a partir del DNI
+            cursor = conn.execute('''
+                SELECT id_estudiante
+                FROM Estudiante
+                WHERE dni_estudiante = ?
+            ''', (dni_estudiante,))
+            estudiante = cursor.fetchone()
 
-            # Verificar si ya existe una nota para este estudiante y curso
-            conn = get_db()
+            if not estudiante:
+                flash('Estudiante no encontrado', 'error')
+                conn.close()
+                return redirect(url_for('asignar_nota'))
+
+            id_estudiante = estudiante[0]
+            
+            # Buscar id_matricula en función del id_estudiante y id_curso
+            cursor = conn.execute('''
+                SELECT id_matricula
+                FROM Matricula
+                WHERE id_estudiante = ? AND id_curso = ?
+            ''', (id_estudiante, id_curso))
+            matricula = cursor.fetchone()
+
+            if not matricula:
+                flash('No se encontró matrícula para el estudiante y curso seleccionados', 'error')
+                conn.close()
+                return redirect(url_for('asignar_nota'))
+
+            id_matricula = matricula[0]
+
+            # Verificar si ya existe una nota para esta matrícula
             cursor = conn.execute('''
                 SELECT id_nota_final
                 FROM NotaFinal
-                WHERE id_estudiante = ? AND id_curso = ?
-            ''', (id_estudiante, id_curso))
+                WHERE id_matricula = ?
+            ''', (id_matricula,))
             nota_existente = cursor.fetchone()
 
             if nota_existente:
                 flash('Este estudiante ya tiene una nota asignada para este curso', 'error')
-            conn = get_db()
-            conn.execute('''
-                INSERT INTO NotaFinal (id_estudiante, id_matricula, nota_final)
-                VALUES (?, ?, ?)
-            ''', (id_estudiante, id_curso, nota))
-            conn.commit()
+            else:
+                conn.execute('''
+                    INSERT INTO NotaFinal (id_matricula, nota_final)
+                    VALUES (?, ?)
+                ''', (id_matricula, nota))
+                conn.commit()
+                flash('Nota agregada correctamente', 'success')
+
             conn.close()
-            flash('Nota agregada correctamente', 'success')
             return redirect(url_for('asignar_nota'))
         except Exception as e:
-            return f'Error al asignar nota: {str(e)}'
+            flash(f'Error al asignar nota: {str(e)}', 'error')
+            return redirect(url_for('asignar_nota'))
     else:
         conn = get_db()
-        estudiantes = conn.execute('SELECT id_estudiante, nombre, apellido FROM Estudiante').fetchall()
+        estudiantes = conn.execute('SELECT id_estudiante, dni_estudiante, nombre, apellido FROM Estudiante').fetchall()
         categorias = conn.execute('SELECT id_categoria, nombre FROM Categoria').fetchall()
         cursos = conn.execute('SELECT id_curso, nombre_curso FROM Curso').fetchall()
         conn.close()
         return render_template('asignar_nota.html', estudiantes=estudiantes, cursos=cursos, categorias=categorias)
+
 
 @app.route('/get_categories', methods=['GET'])
 def get_categories():

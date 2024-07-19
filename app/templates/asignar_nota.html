@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asignar Notas</title>
-    <!-- Incluir jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='notas.css') }}">
 </head>
@@ -38,7 +37,7 @@
         </div>
         <div>
             <label for="dni_estudiante">DNI Estudiante:</label>
-            <input type="text" id="dni_estudiante" name="dni_estudiante" required autofocus>
+            <input type="text" id="dni_estudiante" name="id_estudiante" required autofocus>
         </div>
         <div>
             <label for="dni_estudiante_display">Estudiante:</label>
@@ -46,14 +45,13 @@
         </div>
         <div>
             <label for="campo-notas">Nota:</label>
-            <input type="number" id="campo-notas" name="nota" required>
+            <input type="number" id="campo-notas" name="nota" min="0" max="20" required>
             <button type="submit" class="btn">Agregar nota</button>
             <a href="{{ url_for('index') }}" class="button button-back">Back</a>
         </div>
     </form>
 
     <script>
-        // Cargar cursos según la categoría seleccionada
         $(document).ready(function() {
             $('#categoria').change(function() {
                 var categoria_id = $(this).val();
@@ -78,7 +76,6 @@
                 }
             });
 
-            // Buscar estudiante por DNI
             $('#dni_estudiante').on('input', function() {
                 var dniEstudiante = this.value.trim();
                 if (dniEstudiante) {
@@ -99,7 +96,6 @@
                 }
             });
 
-            // Validar nota
             $('#campo-notas').on('input', function() {
                 var nota = parseFloat(this.value);
                 if (isNaN(nota) || nota < 0 || nota > 20) {
