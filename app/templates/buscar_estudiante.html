@@ -4,24 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buscar Estudiante - Wizarding Academy Hub</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
         body {
             font-family: 'Roboto Condensed', sans-serif;
-            background-color: #4F0F19; /* Fondo rojo */
-            color: #fff; /* Color de texto blanco */
+            background-color: #4F0F19;
+            color: #fff;
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center; /* Centra verticalmente el contenido */
-            min-height: 100vh; /* Mínimo alto de la ventana */
+            justify-content: center;
+            min-height: 100vh;
         }
 
         h1 {
-            font-size: 36px; /* Tamaño del título */
-            margin: 30px 0 20px; /* Márgenes superior e inferior, 30px arriba y 20px abajo */
+            font-size: 36px;
+            margin: 30px 0 20px;
         }
 
         form {
@@ -46,65 +47,114 @@
             border-radius: 500px;
             border: 2px solid #B1B1B7;
             background-color: #202020;
-            color: #666565;
+            color: #dfdede;
             margin-top: 10px;
         }
 
         .button-container {
             display: flex;
-            gap: 10px; /* Espacio entre los botones */
-            margin-top: 20px; /* Espacio superior */
+            gap: 10px;
+            margin-top: 20px;
         }
 
         button, .back-button {
-            background-color: #e8bb05; /* Cambia el color de fondo del botón */
-            color: #333; /* Cambia el color del texto del botón */
+            background-color: #e8bb05;
+            color: #333;
             border: none;
-            padding: 10px 20px; /* Ajusta el padding según sea necesario */
+            padding: 10px 20px;
             border-radius: 100px;
             cursor: pointer;
             transition: background-color 0.5s;
-            font-size: 20px; /* Aumenta el tamaño de la fuente del botón */
+            font-size: 20px;
             font-family: 'Roboto Condensed', sans-serif;
-            text-decoration: none; /* Elimina el subrayado del enlace */
-            display: inline-block; /* Asegura que el enlace se comporte como un botón */
+            text-decoration: none;
+            display: inline-block;
         }
 
         button:hover, .back-button:hover {
-            background-color: #d4a105; /* Fondo del botón al pasar el mouse */
+            background-color: #d4a105;
         }
 
         .alert {
-            background-color: #b8b8b8; /* Gris claro para alertas */
+            background-color: #b8b8b8;
             color: rgb(31, 31, 31);
             padding: 15px;
             margin-bottom: 20px;
             border-radius: 5px;
-            width: 80%; /* Ajusta el ancho de las alertas */
-            max-width: 600px; /* Asegura que la alerta no sea demasiado ancha */
+            width: 80%;
+            max-width: 600px;
             text-align: center;
+        }
+
+        .not-found-message {
+            color: #ff6666;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
         }
     </style>
 </head>
 <body>
     <h1>Buscar Estudiante</h1>
 
-    <!-- Mostrar mensajes de alerta -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-    <form action="{{ url_for('buscar_estudiante') }}" method="POST">
-        <label for="dni_estudiante">DNI del Estudiante:</label>
-        <input type="text" id="dni_estudiante" name="dni_estudiante" required>
-        <div class="button-container">
-            <button type="submit">Generar Reporte</button>
-            <a href="{{ url_for('index') }}" class="back-button">back</a>
-        </div>
-    </form>
+        <form action="{{ url_for('buscar_estudiante') }}" method="POST">
+            <label for="dni_estudiante">DNI del Estudiante:</label>
+            <input type="text" id="dni_estudiante" name="dni_estudiante" required>
+            
+            <label for="nombre_estudiante">Nombre del Estudiante:</label>
+            <input type="text" id="nombre_estudiante" name="nombre_estudiante" readonly>
+            <span class="not-found-message">Estudiante no encontrado.</span>
+
+            <input type="hidden" id="id_estudiante" name="id_estudiante">
+            
+            <div class="button-container">
+                <button type="submit">Generar Reporte</button>
+                <a href="{{ url_for('index') }}" class="back-button">Back</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+    $(document).ready(function() {
+        $('#dni_estudiante').on('input', function() {
+            var dni = $(this).val();
+            if (dni.length >= 6) {  // Asumiendo que el DNI tiene al menos 6 d gitos
+                $.get('/get_estudiante_by_dni/' + dni, function(data) {
+                    if (data.nombre_completo) {
+                        $('#nombre_estudiante').val(data.nombre_completo);
+                        $('#id_estudiante').val(data.id_estudiante);
+                        $('.not-found-message').hide();
+                    } else {
+                        $('#nombre_estudiante').val('');
+                        $('#id_estudiante').val('');
+                        $('.not-found-message').show();
+                    }
+                }).fail(function() {
+                    $('#nombre_estudiante').val('');
+                    $('#id_estudiante').val('');
+                    $('.not-found-message').show();
+                });
+            } else {
+                $('#nombre_estudiante').val('');
+                $('#id_estudiante').val('');
+                $('.not-found-message').hide();
+            }
+        });
+    });
+    </script>
 </body>
 </html>
+
+
+
+
+                            

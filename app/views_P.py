@@ -788,13 +788,30 @@ def certificado():
 
 
 #Reportes Estudiantes --- Profesor
-
 @app.route('/buscar_estudiante', methods=['GET', 'POST'])
 def buscar_estudiante():
     if request.method == 'POST':
         dni_estudiante = request.form['dni_estudiante']
         return redirect(url_for('generar_reporte', dni_estudiante=dni_estudiante))
     return render_template('buscar_estudiante.html')
+
+@app.route('/get_estudiante_by_dni/<dni>')
+def get_estudiante_by_dni(dni):
+    conn = get_db()
+    try:
+        cursor = conn.execute('SELECT id_estudiante, nombre, apellido FROM Estudiante WHERE dni_estudiante = ?', (dni,))
+        estudiante = cursor.fetchone()
+        if estudiante:
+            return jsonify({
+                'id_estudiante': estudiante['id_estudiante'],
+                'nombre_completo': f"{estudiante['nombre']} {estudiante['apellido']}"
+            })
+        return jsonify({}), 404
+    except Exception as e:
+        print(f"Error al buscar estudiante: {str(e)}")
+        return jsonify({}), 500
+    finally:
+        conn.close()
 
 @app.route('/generar_reporte/<string:dni_estudiante>', methods=['GET'])
 def generar_reporte(dni_estudiante):
@@ -850,6 +867,7 @@ def generar_reporte(dni_estudiante):
         return redirect(url_for('buscar_estudiante'))
     finally:
         conn.close()
+
 
 
 
